@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'gamification',
     'shop',
     'branches',
+    'notifications',
 
     #Third party applar
     'django_filters',
