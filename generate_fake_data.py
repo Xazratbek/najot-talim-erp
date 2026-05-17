@@ -1,6 +1,6 @@
 import os
 import random
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from decimal import Decimal
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
@@ -10,8 +10,7 @@ import django
 django.setup()
 
 from django.contrib.auth.hashers import make_password
-from django.core.files.base import ContentFile
-from django.db import transaction
+from django.db import connection
 from django.utils import timezone
 
 from attendance.models import Attendance, Status
@@ -27,15 +26,59 @@ from shop.models import Category, Order, Product
 from users.models import Roles, User
 
 
+BATCH_SIZE = 3000
+PASSWORD = make_password("Test12345!")
+
 FIRST_NAMES = [
-    "Aziz", "Jasur", "Sherzod", "Bekzod", "Muhammadali", "Diyor", "Abror", "Sardor", "Shahzod", "Farrux",
-    "Kamron", "Islom", "Asadbek", "Zafar", "Anvar", "Laziz", "Oybek", "Javohir", "Rustam", "Shoxrux",
-    "Madina", "Nilufar", "Zilola", "Shahnoza", "Sevinch", "Mohira", "Dildora", "Gulnoza", "Shirin", "Malika",
-    "Rayhona", "Dilnoza", "Zuhra", "Munisa", "Nozima", "Saida", "Nargiza", "Mavluda", "Gulbahor", "Feruza",
+    "Aziz",
+    "Jasur",
+    "Sherzod",
+    "Bekzod",
+    "Muhammadali",
+    "Diyor",
+    "Abror",
+    "Sardor",
+    "Shahzod",
+    "Farrux",
+    "Kamron",
+    "Islom",
+    "Asadbek",
+    "Zafar",
+    "Anvar",
+    "Laziz",
+    "Oybek",
+    "Javohir",
+    "Rustam",
+    "Shoxrux",
+    "Madina",
+    "Nilufar",
+    "Zilola",
+    "Shahnoza",
+    "Sevinch",
+    "Mohira",
+    "Dildora",
+    "Gulnoza",
+    "Shirin",
+    "Malika",
 ]
+
 LAST_NAMES = [
-    "Karimov", "Ismoilov", "Abdullayev", "Raximov", "Sattorov", "Yuldashev", "Qodirov", "Tojiboyev", "Nazarov",
-    "Tursunov", "Alimuhamedov", "Sobirov", "Ergashev", "Musayev", "Asqarov", "Xolmatov", "Mamatqulov", "Nurmurodov",
+    "Karimov",
+    "Ismoilov",
+    "Abdullayev",
+    "Raximov",
+    "Sattorov",
+    "Yuldashev",
+    "Qodirov",
+    "Tojiboyev",
+    "Nazarov",
+    "Tursunov",
+    "Alimuhamedov",
+    "Sobirov",
+    "Ergashev",
+    "Musayev",
+    "Asqarov",
+    "Xolmatov",
 ]
 
 
@@ -43,23 +86,31 @@ def random_name():
     return random.choice(FIRST_NAMES), random.choice(LAST_NAMES)
 
 
-def unique_username(used: set[str]) -> str:
+def unique_username(used):
     while True:
-        username = f"{random.randint(10000, 99999)}"
+        username = str(random.randint(10000, 99999))
         if username not in used:
             used.add(username)
             return username
 
 
-def fake_file(name: str, text: str) -> ContentFile:
-    return ContentFile(text.encode("utf-8"), name=name)
+def chunked_bulk_create(model, data, batch_size=BATCH_SIZE):
+    if not data:
+        return
+
+    model.objects.bulk_create(data, batch_size=batch_size)
+    data.clear()
 
 
-@transaction.atomic
+def reset_connection():
+    connection.close()
+
+
 def generate_data():
     random.seed(42)
 
-    print("Eski fake ma'lumotlar tozalanmoqda...")
+    print("Cleaning old data...")
+
     models = [
         ExamSubmission,
         Exam,
@@ -81,250 +132,472 @@ def generate_data():
         User,
         Branch,
     ]
+
     for model in models:
         model.objects.all().delete()
 
-    print("Branchlar yaratilmoqda...")
-    branches = [
-        Branch.objects.create(
+    print("Creating branches...")
+
+    branch_objects = [
+        Branch(
             name=f"Najot Ta'lim - Filial {i + 1}",
-            address=f"Toshkent sh., {i + 1}-daha, {random.randint(1, 120)}-uy",
+            address=f"Toshkent sh., {i + 1}-daha",
             phone=f"+99890{random.randint(1000000, 9999999)}",
         )
-        for i in range(30)
+        for i in range(10)
     ]
 
-    print("Kurs kategoriyalari va kurslar yaratilmoqda...")
-    category_names = ["Dasturlash", "Dizayn", "Marketing", "Til", "Biznes"]
-    course_categories = [CourseCategory.objects.create(title=name) for name in category_names]
+    Branch.objects.bulk_create(branch_objects)
+    branches = list(Branch.objects.all())
+
+    print("Creating course categories...")
+
+    category_names = [
+        "Dasturlash",
+        "Dizayn",
+        "Marketing",
+        "Til",
+        "Biznes",
+    ]
+
+    CourseCategory.objects.bulk_create(
+        [CourseCategory(title=name) for name in category_names]
+    )
+
+    course_categories = list(CourseCategory.objects.all())
+
+    print("Creating courses...")
 
     course_titles = [
-        "Python Backend", "Java Backend", "Frontend React", "Flutter Mobile", "UI/UX Design", "SMM Pro",
-        "Project Management", "English IELTS", "Data Analytics", "AI Fundamentals", "DevOps Basics", "Cyber Security",
+        "Python Backend",
+        "Java Backend",
+        "Frontend React",
+        "Flutter",
+        "UI UX",
+        "SMM",
+        "Project Management",
+        "English IELTS",
+        "Data Analytics",
+        "AI Fundamentals",
     ]
-    courses = []
-    for title in course_titles:
-        courses.append(
-            Course.objects.create(
+
+    Course.objects.bulk_create(
+        [
+            Course(
                 category=random.choice(course_categories),
                 title=title,
-                price=Decimal(random.randint(900000, 3200000)),
+                price=Decimal(random.randint(900000, 3000000)),
             )
-        )
+            for title in course_titles
+        ]
+    )
 
-    print("Darslar yaratilmoqda...")
-    lessons = [Lesson.objects.create(title=f"Lesson {i + 1}") for i in range(220)]
+    courses = list(Course.objects.all())
 
-    print("Foydalanuvchilar yaratilmoqda...")
+    print("Creating lessons...")
+
+    Lesson.objects.bulk_create(
+        [Lesson(title=f"Lesson {i + 1}") for i in range(80)]
+    )
+
+    lessons = list(Lesson.objects.all())
+
+    print("Creating users...")
+
     used_usernames = set()
-    users = []
-    teachers = []
-    students = []
-    support_teachers = []
 
-    role_pool = ([Roles.ADMIN] * 5) + ([Roles.TEACHER] * 30) + ([Roles.SUPPORT_TEACHER] * 15) + ([Roles.STUDENT] * 150)
+    role_pool = (
+        ([Roles.ADMIN] * 3)
+        + ([Roles.TEACHER] * 18)
+        + ([Roles.SUPPORT_TEACHER] * 8)
+        + ([Roles.STUDENT] * 80)
+    )
+
     random.shuffle(role_pool)
 
-    for i, role in enumerate(role_pool, start=1):
+    users_to_create = []
+
+    for role in role_pool:
         first, last = random_name()
-        user = User.objects.create(
-            username=unique_username(used_usernames),
-            first_name=first,
-            last_name=last,
-            phone=f"+998{random.randint(88, 99)}{random.randint(1000000, 9999999)}",
-            role=role,
-            balance=random.randint(0, 8_000_000),
-            branch=random.choice(branches),
-            password=make_password("Test12345!"),
-            is_active=True,
+
+        users_to_create.append(
+            User(
+                username=unique_username(used_usernames),
+                first_name=first,
+                last_name=last,
+                phone=f"+998{random.randint(88, 99)}{random.randint(1000000, 9999999)}",
+                role=role,
+                balance=random.randint(0, 5000000),
+                branch=random.choice(branches),
+                password=PASSWORD,
+                is_active=True,
+            )
         )
-        users.append(user)
-        if role == Roles.TEACHER:
-            teachers.append(user)
-        elif role == Roles.STUDENT:
-            students.append(user)
-        elif role == Roles.SUPPORT_TEACHER:
-            support_teachers.append(user)
 
-    print("Guruhlar va bog'lanishlar yaratilmoqda...")
-    groups = []
-    group_students_to_create = []
-    group_teachers_to_create = []
+    User.objects.bulk_create(users_to_create, batch_size=1000)
 
-    for i in range(90):
-        started_at = date.today() - timedelta(days=random.randint(20, 280))
-        ended_at = None if random.random() < 0.75 else started_at + timedelta(days=random.randint(60, 180))
-        group = Group.objects.create(
-            name=f"{random.choice(['Alpha', 'Beta', 'Gamma', 'Delta', 'Sigma'])}-{i + 1}",
-            course=random.choice(courses),
-            branch=random.choice(branches),
-            started_at=started_at,
-            ended_at=ended_at,
-            is_opened=ended_at is None,
+    users = list(User.objects.all())
+
+    teachers = [u for u in users if u.role == Roles.TEACHER]
+    support_teachers = [u for u in users if u.role == Roles.SUPPORT_TEACHER]
+    students = [u for u in users if u.role == Roles.STUDENT]
+
+    print("Creating groups...")
+
+    groups_to_create = []
+
+    for i in range(35):
+        started_at = date.today() - timedelta(days=random.randint(20, 200))
+
+        ended_at = (
+            None
+            if random.random() < 0.8
+            else started_at + timedelta(days=random.randint(40, 120))
         )
-        groups.append(group)
 
-        group_teachers_to_create.append(GroupTeacher(group=group, teacher=random.choice(teachers)))
+        groups_to_create.append(
+            Group(
+                name=f"Group-{i + 1}",
+                course=random.choice(courses),
+                branch=random.choice(branches),
+                started_at=started_at,
+                ended_at=ended_at,
+                is_opened=ended_at is None,
+            )
+        )
+
+    Group.objects.bulk_create(groups_to_create)
+
+    groups = list(Group.objects.all())
+
+    print("Creating group teachers and students...")
+
+    group_teachers = []
+    group_students = []
+
+    students_by_group = {}
+
+    for group in groups:
+        group_teachers.append(
+            GroupTeacher(
+                group=group,
+                teacher=random.choice(teachers),
+            )
+        )
+
         if support_teachers and random.random() < 0.5:
-            group_teachers_to_create.append(GroupTeacher(group=group, teacher=random.choice(support_teachers)))
-
-        group_size = random.randint(25, 50)
-        for student in random.sample(students, k=min(group_size, len(students))):
-            group_students_to_create.append(
-                GroupStudent(group=group, student=student, joined_at=started_at + timedelta(days=random.randint(0, 20)))
+            group_teachers.append(
+                GroupTeacher(
+                    group=group,
+                    teacher=random.choice(support_teachers),
+                )
             )
 
-    GroupTeacher.objects.bulk_create(group_teachers_to_create, batch_size=500)
-    GroupStudent.objects.bulk_create(group_students_to_create, batch_size=2000)
+        group_size = random.randint(15, 28)
 
-    print("Group lessonlar, attendance va homeworks yaratilmoqda...")
+        shuffled_students = students.copy()
+        random.shuffle(shuffled_students)
+
+        selected_students = shuffled_students[:group_size]
+
+        students_by_group[group.id] = selected_students
+
+        for st in selected_students:
+            group_students.append(
+                GroupStudent(
+                    group=group,
+                    student=st,
+                    joined_at=group.started_at
+                    + timedelta(days=random.randint(0, 15)),
+                )
+            )
+
+    GroupTeacher.objects.bulk_create(group_teachers, batch_size=1000)
+    GroupStudent.objects.bulk_create(group_students, batch_size=3000)
+
+    reset_connection()
+
+    print("Creating group lessons...")
+
     group_lessons = []
+
     for group in groups:
-        selected_lessons = random.sample(lessons, k=random.randint(16, 28))
+        selected_lessons = random.sample(
+            lessons,
+            k=random.randint(8, 14),
+        )
+
         for lesson in selected_lessons:
-            group_lessons.append(GroupLesson(group=group, lesson=lesson))
-    GroupLesson.objects.bulk_create(group_lessons, batch_size=2000)
+            group_lessons.append(
+                GroupLesson(
+                    group=group,
+                    lesson=lesson,
+                )
+            )
 
-    all_group_lessons = list(GroupLesson.objects.select_related("group", "lesson"))
-    students_by_group = {}
-    for gs in GroupStudent.objects.select_related("student", "group"):
-        students_by_group.setdefault(gs.group_id, []).append(gs.student)
+    GroupLesson.objects.bulk_create(group_lessons, batch_size=3000)
 
-    attendance_to_create = []
-    homework_to_create = []
+    all_group_lessons = list(
+        GroupLesson.objects.select_related(
+            "group",
+            "lesson",
+        )
+    )
+
+    reset_connection()
+
+    print("Creating attendance and homeworks...")
+
+    attendance_batch = []
+    homework_batch = []
+
     for gl in all_group_lessons:
         grp_students = students_by_group.get(gl.group_id, [])
+
         for st in grp_students:
-            attendance_to_create.append(
+            attendance_batch.append(
                 Attendance(
                     group_lesson=gl,
                     student=st,
-                    status=Status.PRESENT if random.random() > 0.18 else Status.ABSENT,
+                    status=(
+                        Status.PRESENT
+                        if random.random() > 0.18
+                        else Status.ABSENT
+                    ),
                 )
             )
-        if random.random() < 0.72:
-            homework_to_create.append(
+
+            if len(attendance_batch) >= BATCH_SIZE:
+                chunked_bulk_create(Attendance, attendance_batch)
+
+        if random.random() < 0.7:
+            homework_batch.append(
                 Homework(
                     group_lesson=gl,
-                    description="Uyga vazifa: mavzu bo'yicha amaliy topshiriqlar.",
-                    deadline=timezone.now() + timedelta(days=random.randint(2, 10)),
-                    file=fake_file("homework.txt", "Homework description"),
+                    description="Uyga vazifa",
+                    deadline=timezone.now()
+                    + timedelta(days=random.randint(2, 10)),
+                    file="fake/homework.txt",
                 )
             )
 
-    Attendance.objects.bulk_create(attendance_to_create, batch_size=5000)
-    Homework.objects.bulk_create(homework_to_create, batch_size=500)
+            if len(homework_batch) >= 1000:
+                chunked_bulk_create(Homework, homework_batch, 1000)
 
-    print("Homework submissions yaratilmoqda...")
-    hw_submissions = []
-    for hw in Homework.objects.select_related("group_lesson__group"):
+    chunked_bulk_create(Attendance, attendance_batch)
+    chunked_bulk_create(Homework, homework_batch, 1000)
+
+    reset_connection()
+
+    print("Creating homework submissions...")
+
+    hw_submission_batch = []
+
+    homeworks = Homework.objects.select_related(
+        "group_lesson__group"
+    ).iterator(chunk_size=1000)
+
+    for hw in homeworks:
         grp_students = students_by_group.get(hw.group_lesson.group_id, [])
+
         for st in grp_students:
-            if random.random() < 0.74:
-                hw_submissions.append(
+            if random.random() < 0.75:
+                hw_submission_batch.append(
                     HomeworkSubmission(
                         homework=hw,
                         student=st,
-                        description="Topshiriq bajarildi.",
-                        file=fake_file("submission.txt", "Submission body"),
+                        description="Topshiriq bajarildi",
+                        file="fake/submission.txt",
                     )
                 )
-    HomeworkSubmission.objects.bulk_create(hw_submissions, batch_size=1500)
 
-    print("To'lovlar, XP va Shop ma'lumotlari yaratilmoqda...")
-    payments = []
-    xps = []
+                if len(hw_submission_batch) >= BATCH_SIZE:
+                    chunked_bulk_create(
+                        HomeworkSubmission,
+                        hw_submission_batch,
+                    )
+
+    chunked_bulk_create(HomeworkSubmission, hw_submission_batch)
+
+    reset_connection()
+
+    print("Creating payments and XP...")
+
+    payments_batch = []
+    xp_batch = []
+
     for st in students:
-        for _ in range(random.randint(2, 8)):
-            payments.append(
+        for _ in range(random.randint(2, 5)):
+            payments_batch.append(
                 Payment(
                     student=st,
-                    amount=Decimal(random.randint(250000, 2200000)),
-                    payment_type=random.choice(PaymentTypeChoices.values),
-                    paid_at=timezone.now() - timedelta(days=random.randint(1, 365)),
+                    amount=Decimal(random.randint(250000, 1800000)),
+                    payment_type=random.choice(
+                        PaymentTypeChoices.values
+                    ),
+                    paid_at=timezone.now()
+                    - timedelta(days=random.randint(1, 365)),
                 )
             )
-        for _ in range(random.randint(8, 20)):
-            xps.append(
+
+            if len(payments_batch) >= BATCH_SIZE:
+                chunked_bulk_create(Payment, payments_batch)
+
+        for _ in range(random.randint(5, 12)):
+            xp_batch.append(
                 XP(
                     student=st,
-                    amount=random.randint(5, 120),
-                    reason=random.choice(XPReasonChoices.values),
+                    amount=random.randint(5, 100),
+                    reason=random.choice(
+                        XPReasonChoices.values
+                    ),
                 )
             )
-    Payment.objects.bulk_create(payments, batch_size=2000)
-    XP.objects.bulk_create(xps, batch_size=3000)
 
-    shop_categories = [Category.objects.create(name=n) for n in ["Kitob", "Aksesuar", "Texnika", "Kiyim", "Sticker"]]
-    products = []
-    for i in range(75):
-        products.append(
-            Product.objects.create(
-                category=random.choice(shop_categories),
+            if len(xp_batch) >= BATCH_SIZE:
+                chunked_bulk_create(XP, xp_batch)
+
+    chunked_bulk_create(Payment, payments_batch)
+    chunked_bulk_create(XP, xp_batch)
+
+    reset_connection()
+
+    print("Creating shop data...")
+
+    Category.objects.bulk_create(
+        [
+            Category(name="Kitob"),
+            Category(name="Texnika"),
+            Category(name="Sticker"),
+            Category(name="Kiyim"),
+        ]
+    )
+
+    categories = list(Category.objects.all())
+
+    Product.objects.bulk_create(
+        [
+            Product(
+                category=random.choice(categories),
                 title=f"Mahsulot {i + 1}",
-                price=random.randint(30_000, 750_000),
-                image=fake_file("product.jpg", "fakeimagecontent"),
-                stock=random.randint(10, 200),
+                price=random.randint(30000, 400000),
+                image="fake/product.jpg",
+                stock=random.randint(5, 80),
             )
-        )
+            for i in range(40)
+        ]
+    )
 
-    orders = []
+    products = list(Product.objects.all())
+
+    orders_batch = []
+
     for st in students:
-        for _ in range(random.randint(1, 6)):
-            orders.append(Order(student=st, product=random.choice(products)))
-    Order.objects.bulk_create(orders, batch_size=2000)
+        for _ in range(random.randint(1, 3)):
+            orders_batch.append(
+                Order(
+                    student=st,
+                    product=random.choice(products),
+                )
+            )
 
-    print("Imtihonlar va topshiriqlar yaratilmoqda...")
-    exams = []
+            if len(orders_batch) >= BATCH_SIZE:
+                chunked_bulk_create(Order, orders_batch)
+
+    chunked_bulk_create(Order, orders_batch)
+
+    reset_connection()
+
+    print("Creating exams...")
+
+    exams_batch = []
+
     for group in groups:
-        for i in range(random.randint(2, 4)):
-            started = timezone.now() - timedelta(days=random.randint(5, 120))
-            ended = started + timedelta(hours=2)
-            exams.append(
+        for i in range(random.randint(2, 3)):
+            started = timezone.now() - timedelta(
+                days=random.randint(5, 90)
+            )
+
+            exams_batch.append(
                 Exam(
                     group=group,
-                    title=f"{group.name} - Exam {i + 1}",
-                    description="Oraliq nazorat imtihoni.",
+                    title=f"{group.name} Exam {i + 1}",
+                    description="Oraliq imtihon",
                     started_at=started,
-                    ended_at=ended,
-                    allow_resubmission=random.random() < 0.35,
+                    ended_at=started + timedelta(hours=2),
+                    allow_resubmission=random.random() < 0.3,
                 )
             )
-    Exam.objects.bulk_create(exams, batch_size=500)
 
-    exam_submissions = []
+    Exam.objects.bulk_create(exams_batch, batch_size=1000)
+
+    exams = Exam.objects.select_related("group").iterator(
+        chunk_size=1000
+    )
+
+    print("Creating exam submissions...")
+
     teacher_pool = teachers + support_teachers
-    for exam in Exam.objects.select_related("group"):
+
+    exam_submission_batch = []
+
+    for exam in exams:
         grp_students = students_by_group.get(exam.group_id, [])
+
         for st in grp_students:
-            if random.random() < 0.81:
-                exam_submissions.append(
+            if random.random() < 0.8:
+                checked = random.random() < 0.7
+
+                exam_submission_batch.append(
                     ExamSubmission(
                         exam=exam,
                         student=st,
-                        file=fake_file("exam_submission.txt", "Exam answer"),
-                        description="Barcha savollarga javob berildi.",
-                        checked_by=random.choice(teacher_pool) if random.random() < 0.7 else None,
-                        checked_at=timezone.now() - timedelta(days=random.randint(1, 30)) if random.random() < 0.7 else None,
+                        file="fake/exam_submission.txt",
+                        description="Exam solved",
+                        checked_by=(
+                            random.choice(teacher_pool)
+                            if checked
+                            else None
+                        ),
+                        checked_at=(
+                            timezone.now()
+                            - timedelta(
+                                days=random.randint(1, 20)
+                            )
+                            if checked
+                            else None
+                        ),
                     )
                 )
-    ExamSubmission.objects.bulk_create(exam_submissions, batch_size=2000)
 
-    print("Tayyor ✅")
+                if len(exam_submission_batch) >= BATCH_SIZE:
+                    chunked_bulk_create(
+                        ExamSubmission,
+                        exam_submission_batch,
+                    )
+
+    chunked_bulk_create(
+        ExamSubmission,
+        exam_submission_batch,
+    )
+
+    reset_connection()
+
+    print("\nDONE ✅\n")
+
     print(f"Users: {User.objects.count()}")
-    print(f"Branches: {Branch.objects.count()}")
     print(f"Groups: {Group.objects.count()}")
-    print(f"Group students: {GroupStudent.objects.count()}")
-    print(f"Group lessons: {GroupLesson.objects.count()}")
+    print(f"Group Students: {GroupStudent.objects.count()}")
+    print(f"Group Lessons: {GroupLesson.objects.count()}")
     print(f"Attendance: {Attendance.objects.count()}")
-    print(f"Homeworks: {Homework.objects.count()}")
-    print(f"Homework submissions: {HomeworkSubmission.objects.count()}")
+    print(f"Homework: {Homework.objects.count()}")
+    print(f"Homework Submissions: {HomeworkSubmission.objects.count()}")
     print(f"Payments: {Payment.objects.count()}")
     print(f"XP: {XP.objects.count()}")
     print(f"Products: {Product.objects.count()}")
     print(f"Orders: {Order.objects.count()}")
     print(f"Exams: {Exam.objects.count()}")
-    print(f"Exam submissions: {ExamSubmission.objects.count()}")
+    print(f"Exam Submissions: {ExamSubmission.objects.count()}")
 
 
 if __name__ == "__main__":

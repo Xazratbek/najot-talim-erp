@@ -24,6 +24,7 @@ class Group(TimeStampedModel):
         null=True
     )
     is_opened = models.BooleanField(default=False)
+    max_students = models.PositiveIntegerField(default=28)
 
     class Meta:
         verbose_name = "Guruh"

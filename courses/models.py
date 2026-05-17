@@ -11,6 +11,7 @@ class Course(TimeStampedModel):
     category = models.ForeignKey(CourseCategory,on_delete=models.CASCADE,related_name='courses')
     title = models.CharField(max_length=255)
     price = models.DecimalField(max_digits=12,decimal_places=2)
+    duration_in_month = models.PositiveSmallIntegerField(null=True,blank=True)
 
     class Meta:
         verbose_name = "Yo'nalish"

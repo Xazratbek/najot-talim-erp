@@ -4,7 +4,7 @@ from .models import Course, CourseCategory
 
 @admin.register(CourseCategory)
 class CourseCategoryAdmin(admin.ModelAdmin):
-    list = ['id','title','created_at']
+    list = ['id','title','created_at','duration_in_month']
 
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
