@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     #Third party applar
     'django_filters',
     'rest_framework',
+    'storages'
 ]
 
 MIDDLEWARE = [
@@ -130,11 +131,10 @@ AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY')
 
 AWS_STORAGE_BUCKET_NAME = env('AWS_STORAGE_BUCKET_NAME')
 
-AWS_STORAGE_BUCKET_NAME = 'my-django-bucket'
+AWS_STORAGE_BUCKET_NAME = 'najot-talim-erp-bucket'
 
 AWS_S3_ENDPOINT_URL = f'https://{SUPABASE_PROJECT_ID}.storage.supabase.co/storage/v1/s3'
 AWS_S3_CUSTOM_DOMAIN = f'{SUPABASE_PROJECT_ID}.supabase.co/storage/v1/object/public/{AWS_STORAGE_BUCKET_NAME}'
-AWS_S3_REGION_NAME = "ap-southeast-1"
 
 AWS_DEFAULT_ACL = None
 AWS_S3_FILE_OVERWRITE = True

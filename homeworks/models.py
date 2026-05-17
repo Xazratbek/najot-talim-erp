@@ -3,6 +3,11 @@ from common.models import TimeStampedModel
 from groups.models import GroupLesson
 from users.models import User
 
+class HomeWorkStatusChoices(models.TextChoices):
+    WAITING = "waiting","Kutayotganlar"
+    NOT_SUBMITTED = "not_submitted", "Bajarilmagan"
+    REJECTED = "rejected", "Qaytarilgan"
+    APPROVED = "approved", "Qabul qilingan"
 
 class Homework(TimeStampedModel):
     group_lesson = models.ForeignKey(
@@ -25,25 +30,22 @@ class Homework(TimeStampedModel):
 
 
 class HomeworkSubmission(TimeStampedModel):
-
     homework = models.ForeignKey(
         Homework,
         on_delete=models.CASCADE,
         related_name='submissions'
     )
-
     student = models.ForeignKey(
         User,
         on_delete=models.CASCADE
     )
-
     file = models.FileField(
         upload_to='homeworks/submissions/'
     )
-
     description = models.TextField(
         blank=True
     )
+    status = models.CharField(max_length=25,choices=HomeWorkStatusChoices.choices,default=HomeWorkStatusChoices.NOT_SUBMITTED)
 
     class Meta:
         verbose_name = "Uyga vazifa topshirig'i"
