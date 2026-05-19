@@ -1,11 +1,10 @@
-from django.conf import settings
+from users.models import User
 from django.db import models
-
 from common.models import TimeStampedModel
-
 
 class NotificationTypes(models.TextChoices):
     NEW_EXAM = "new_exam", "Yangi imtihon"
+    NEW_LESSON = "new_lesson","Yangi dars"
     EXAM_ANNOUNCEMENT = "exam_announcement", "Imtihon e'loni"
     XP_UPDATE = "xp_update", "XP yangilanishi"
     EXAM_DEADLINE_NEAR = "exam_deadline_near", "Imtihon muddati yaqin"
@@ -17,7 +16,7 @@ class NotificationTypes(models.TextChoices):
 
 class Notification(TimeStampedModel):
     receiver = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        User,
         on_delete=models.CASCADE,
         related_name='notifications',
         verbose_name="Qabul qiluvchi"

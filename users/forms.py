@@ -17,6 +17,7 @@ class UserForm(forms.ModelForm):
             'role',
             'balance',
             'branch',
+            'gender',
             'is_active',
         ]
 
@@ -107,3 +108,13 @@ class TeacherCreateForm(UserForm):
         
         #bir xil formatda saqlaymiz: +998901234567
         return cleaned_phone
+class AdminStudentCreateForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = [
+            'first_name',
+            'last_name',
+            'phone',
+            'role',
+            'gender'
+        ]

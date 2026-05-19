@@ -26,7 +26,7 @@ class Homework(TimeStampedModel):
         ordering = ['-id']
 
     def __str__(self):
-        return self.title
+        return self.description
 
 
 class HomeworkSubmission(TimeStampedModel):

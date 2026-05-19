@@ -76,7 +76,6 @@ class GroupStudent(models.Model):
     def __str__(self):
         return f"{self.student} - {self.group}"
 
-
 class GroupLesson(models.Model):
     group = models.ForeignKey(
         Group,

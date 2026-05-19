@@ -38,6 +38,9 @@ INSTALLED_APPS = [
     'shop',
     'branches',
     'notifications',
+    'teachers',
+    'students',
+    'staffs',
 
     #Third party applar
     'django_filters',

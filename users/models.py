@@ -8,6 +8,9 @@ class Roles(models.TextChoices):
     TEACHER = "teacher", "O'qituvchi"
     SUPPORT_TEACHER = "support_teacher", "Yordamchi o'qituvchi"
 
+class GenderChoices(models.TextChoices):
+    MALE = "male", "Erkak"
+    FEMALE = "female","Ayol"
 
 class User(AbstractUser):
     username = models.CharField(
@@ -35,6 +38,7 @@ class User(AbstractUser):
         null=True,
         blank=True
     )
+    gender = models.CharField(max_length=15,null=True,blank=True,choices=GenderChoices.choices)
     REQUIRED_FIELDS = []
 
     class Meta:
