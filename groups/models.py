@@ -7,7 +7,7 @@ from branches.models import Branch
 
 
 class Group(TimeStampedModel):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, db_index=True)
     course = models.ForeignKey(
         Course,
         on_delete=models.CASCADE,
@@ -18,18 +18,22 @@ class Group(TimeStampedModel):
         on_delete=models.CASCADE,
         related_name='groups'
     )
-    started_at = models.DateField()
+    started_at = models.DateField(db_index=True)
     ended_at = models.DateField(
         blank=True,
         null=True
     )
-    is_opened = models.BooleanField(default=False)
+    is_opened = models.BooleanField(default=False, db_index=True)
     max_students = models.PositiveIntegerField(default=28)
 
     class Meta:
         verbose_name = "Guruh"
         verbose_name_plural = "Guruhlar"
         ordering = ['-id']
+        indexes = [
+            models.Index(fields=['branch', 'course']),
+            models.Index(fields=['branch', 'is_opened']),
+        ]
 
     def __str__(self):
         return self.name
@@ -50,6 +54,15 @@ class GroupTeacher(models.Model):
         verbose_name = "Guruh o'qituvchisi"
         verbose_name_plural = "Guruh o'qituvchilari"
         ordering = ['-id']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['group', 'teacher'],
+                name='uniq_group_teacher_pair'
+            )
+        ]
+        indexes = [
+            models.Index(fields=['group', 'teacher']),
+        ]
 
     def __str__(self):
         return f"{self.group} - {self.teacher}"
@@ -72,6 +85,15 @@ class GroupStudent(models.Model):
         verbose_name = "Guruh o'quvchisi"
         verbose_name_plural = "Guruh o'quvchilari"
         ordering = ['-id']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['group', 'student'],
+                name='uniq_group_student_pair'
+            )
+        ]
+        indexes = [
+            models.Index(fields=['group', 'student']),
+        ]
 
     def __str__(self):
         return f"{self.student} - {self.group}"
