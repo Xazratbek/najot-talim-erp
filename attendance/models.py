@@ -19,7 +19,8 @@ class Attendance(TimeStampedModel):
     )
     status = models.CharField(
         max_length=20,
-        choices=Status.choices
+        choices=Status.choices,
+        db_index=True,
     )
 
     class Meta:

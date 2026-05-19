@@ -40,6 +40,7 @@ class GroupStudentAdmin(admin.ModelAdmin):
         'group',
         'student',
     )
+    list_select_related = ('group', 'student')
 
     ordering = ['-id']
 

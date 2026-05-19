@@ -37,7 +37,8 @@ class HomeworkSubmission(TimeStampedModel):
     )
     student = models.ForeignKey(
         User,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        db_index=True
     )
     file = models.FileField(
         upload_to='homeworks/submissions/'
@@ -45,7 +46,7 @@ class HomeworkSubmission(TimeStampedModel):
     description = models.TextField(
         blank=True
     )
-    status = models.CharField(max_length=25,choices=HomeWorkStatusChoices.choices,default=HomeWorkStatusChoices.NOT_SUBMITTED)
+    status = models.CharField(max_length=25,choices=HomeWorkStatusChoices.choices,default=HomeWorkStatusChoices.NOT_SUBMITTED,db_index=True)
 
     class Meta:
         verbose_name = "Uyga vazifa topshirig'i"

@@ -7,11 +7,12 @@ class Exam(models.Model):
     group = models.ForeignKey(
         Group,
         on_delete=models.CASCADE,
-        related_name='exams'
+        related_name='exams',
+        db_index=True
     )
-    title = models.CharField(max_length=255)
+    title = models.CharField(max_length=255,db_index=True)
     description = models.TextField()
-    started_at = models.DateTimeField()
+    started_at = models.DateTimeField(db_index=True)
     ended_at = models.DateTimeField()
     allow_resubmission = models.BooleanField(default=False)
 

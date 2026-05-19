@@ -2,7 +2,7 @@ from django.db import models
 from common.models import TimeStampedModel
 
 class Branch(TimeStampedModel):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255,db_index=True)
     address = models.TextField()
     phone = models.CharField(
         max_length=20,

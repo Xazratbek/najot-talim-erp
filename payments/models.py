@@ -13,14 +13,15 @@ class Payment(TimeStampedModel):
     student = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='payments'
+        related_name='payments',
+        db_index=True
     )
     amount = models.DecimalField(
         max_digits=12,
         decimal_places=2
     )
-    payment_type = models.CharField(max_length=25,choices=PaymentTypeChoices.choices)
-    paid_at = models.DateTimeField()
+    payment_type = models.CharField(max_length=25,choices=PaymentTypeChoices.choices,db_index=True)
+    paid_at = models.DateTimeField(db_index=True)
 
     class Meta:
         verbose_name = "To'lov"

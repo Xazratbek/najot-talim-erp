@@ -12,11 +12,11 @@ class Category(TimeStampedModel):
 class Product(models.Model):
     category = models.ForeignKey(Category,on_delete=models.CASCADE,related_name='products')
     title = models.CharField(max_length=255)
-    price = models.PositiveIntegerField()
+    price = models.PositiveIntegerField(db_index=True)
     image = models.ImageField(
         upload_to='products/'
     )
-    stock = models.PositiveIntegerField()
+    stock = models.PositiveIntegerField(db_index=True)
 
     class Meta:
         verbose_name = "Mahsulot"

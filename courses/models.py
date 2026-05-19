@@ -8,8 +8,8 @@ class CourseCategory(TimeStampedModel):
         return self.title
 
 class Course(TimeStampedModel):
-    category = models.ForeignKey(CourseCategory,on_delete=models.CASCADE,related_name='courses')
-    title = models.CharField(max_length=255)
+    category = models.ForeignKey(CourseCategory,on_delete=models.CASCADE,related_name='courses',db_index=True)
+    title = models.CharField(max_length=255,db_index=True)
     price = models.DecimalField(max_digits=12,decimal_places=2)
     duration_in_month = models.PositiveSmallIntegerField(null=True,blank=True)
 
