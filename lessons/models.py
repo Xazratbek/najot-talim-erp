@@ -9,6 +9,7 @@ class Lesson(TimeStampedModel):
     lesson_date = models.DateField(auto_now_add=True)
 
     class Meta:
+        db_table = 'lessons'
         verbose_name = "Dars"
         verbose_name_plural = "Darslar"
         ordering = ["-id"]
@@ -25,6 +26,11 @@ class LessonRating(TimeStampedModel):
     rated_by = models.ForeignKey(User,on_delete=models.CASCADE,related_name='reviews',db_index=True)
     star = models.IntegerField(validators=[MinValueValidator(1,message="Eng kam baxo 1 bo'lishi kerak"),MaxValueValidator(5,message="Eng ko'pi bilan naxo 5 bo'lishi mumkin")],db_index=True)
     description = models.TextField()
+
+    class Meta:
+        db_table = 'lesson_ratings'
+        verbose_name = "Dars baxosi"
+        verbose_name_plural = "Dars baxolari"
 
     def __str__(self):
         return f"Dars: {self.lesson.title}-baxosi: {self.star} | Rated by: {self.rated_by.get_full_name()}"

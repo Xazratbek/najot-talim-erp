@@ -21,6 +21,7 @@ class Homework(TimeStampedModel):
     deadline = models.DateTimeField()
 
     class Meta:
+        db_table = 'homeworks'
         verbose_name = "Uyga vazifa"
         verbose_name_plural = "Uyga vazifalar"
         ordering = ['-id']
@@ -49,6 +50,7 @@ class HomeworkSubmission(TimeStampedModel):
     status = models.CharField(max_length=25,choices=HomeWorkStatusChoices.choices,default=HomeWorkStatusChoices.NOT_SUBMITTED,db_index=True)
 
     class Meta:
+        db_table = 'homework_submissions'
         verbose_name = "Uyga vazifa topshirig'i"
         verbose_name_plural = "Uyga vazifa topshiriqlari"
         ordering = ['-id']

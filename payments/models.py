@@ -24,6 +24,7 @@ class Payment(TimeStampedModel):
     paid_at = models.DateTimeField(db_index=True)
 
     class Meta:
+        db_table = "payments"
         verbose_name = "To'lov"
         verbose_name_plural = "To'lovlar"
         ordering = ['-id']

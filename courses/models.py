@@ -4,6 +4,9 @@ from common.models import TimeStampedModel
 class CourseCategory(TimeStampedModel):
     title = models.CharField(max_length=150)
 
+    class Meta:
+        db_table = 'course_category'
+
     def __str__(self):
         return self.title
 
@@ -14,6 +17,7 @@ class Course(TimeStampedModel):
     duration_in_month = models.PositiveSmallIntegerField(null=True,blank=True)
 
     class Meta:
+        db_table = 'courses'
         verbose_name = "Yo'nalish"
         verbose_name_plural = "Yo'nalishlar"
         ordering = ['-id']

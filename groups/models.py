@@ -27,6 +27,7 @@ class Group(TimeStampedModel):
     max_students = models.PositiveIntegerField(default=28)
 
     class Meta:
+        db_table = 'groups'
         verbose_name = "Guruh"
         verbose_name_plural = "Guruhlar"
         ordering = ['-id']
@@ -51,6 +52,7 @@ class GroupTeacher(models.Model):
         related_name='group_teachers'
     )
     class Meta:
+        db_table = 'group_teachers'
         verbose_name = "Guruh o'qituvchisi"
         verbose_name_plural = "Guruh o'qituvchilari"
         ordering = ['-id']
@@ -82,6 +84,7 @@ class GroupStudent(models.Model):
     joined_at = models.DateField()
 
     class Meta:
+        db_table = 'group_students'
         verbose_name = "Guruh o'quvchisi"
         verbose_name_plural = "Guruh o'quvchilari"
         ordering = ['-id']
@@ -107,6 +110,7 @@ class GroupLesson(models.Model):
     lesson = models.OneToOneField(Lesson,on_delete=models.CASCADE,related_name='lesson_group')
 
     class Meta:
+        db_table = 'group_lessons'
         verbose_name = "Guruh darsi"
         verbose_name_plural = "Guruh darslari"
         ordering = ['-id']

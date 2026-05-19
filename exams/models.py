@@ -17,6 +17,7 @@ class Exam(models.Model):
     allow_resubmission = models.BooleanField(default=False)
 
     class Meta:
+        db_table = 'exams'
         verbose_name = "Imtihon"
         verbose_name_plural = "Imtihonlar"
         ordering = ['-id']
@@ -53,6 +54,7 @@ class ExamSubmission(models.Model):
         blank=True
     )
     class Meta:
+        db_table = 'exam_submissions'
         verbose_name = "Imtihon topshirig'i"
         verbose_name_plural = "Imtihon topshiriqlari"
         ordering = ['-id']

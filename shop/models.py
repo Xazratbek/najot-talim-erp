@@ -6,6 +6,9 @@ from users.models import User
 class Category(TimeStampedModel):
     name = models.CharField(max_length=150)
 
+    class Meta:
+        db_table = "shop_categories"
+
     def __str__(self):
         return self.name
 
@@ -19,6 +22,7 @@ class Product(models.Model):
     stock = models.PositiveIntegerField(db_index=True)
 
     class Meta:
+        db_table = "products"
         verbose_name = "Mahsulot"
         verbose_name_plural = "Mahsulotlar"
         ordering = ['-id']
@@ -39,6 +43,7 @@ class Order(models.Model):
     )
 
     class Meta:
+        db_table = "orders"
         verbose_name = "Buyurtma"
         verbose_name_plural = "Buyurtmalar"
         ordering = ['-id']

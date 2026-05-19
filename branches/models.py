@@ -9,6 +9,7 @@ class Branch(TimeStampedModel):
         blank=True
     )
     class Meta:
+        db_table = 'branches'
         verbose_name = "Filial"
         verbose_name_plural = "Filiallar"
         ordering = ['-id']

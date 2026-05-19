@@ -36,6 +36,7 @@ class Notification(TimeStampedModel):
     )
 
     class Meta:
+        db_table = "notifications"
         verbose_name = "Bildirishnoma"
         verbose_name_plural = "Bildirishnomalar"
         ordering = ['-id']

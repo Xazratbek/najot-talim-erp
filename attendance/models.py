@@ -24,6 +24,7 @@ class Attendance(TimeStampedModel):
     )
 
     class Meta:
+        db_table = 'attendances'
         verbose_name = "Yo'qlama"
         verbose_name_plural = "Yo'qlamalar"
         ordering = ['-id']

@@ -17,6 +17,7 @@ class XP(models.Model):
     reason = models.CharField(max_length=40,choices=XPReasonChoices.choices)
 
     class Meta:
+        db_table = 'xps'
         verbose_name = "XP"
         verbose_name_plural = "XPlar"
         ordering = ['-id']

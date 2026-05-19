@@ -44,6 +44,7 @@ class User(AbstractUser):
     REQUIRED_FIELDS = []
 
     class Meta:
+        db_table = "users"
         verbose_name = "Foydalanuvchi"
         verbose_name_plural = "Foydalanuvchilar"
         ordering = ['-id']
