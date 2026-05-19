@@ -82,7 +82,7 @@ class GroupLesson(models.Model):
         on_delete=models.CASCADE,
         related_name='group_lessons'
     )
-    lesson = models.ForeignKey(Lesson,on_delete=models.CASCADE,related_name='group_lessons')
+    lesson = models.OneToOneField(Lesson,on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = "Guruh darsi"

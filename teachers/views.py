@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin,UserPassesTestMixin
 from users.models import Roles
@@ -31,11 +31,12 @@ class TeacherLessonCreateView(LoginRequiredMixin, UserPassesTestMixin, View):
 
     def get(self, request):
         form = LessonForm()
-        return render(request,"teacher/lesson_create.html",context={'form':form})
+        return render(request,"teachers/lesson_create.html",context={'form':form})
 
     def post(self, request):
         form = LessonForm(data=request.POST)
         if form.is_valid():
-            form.save()
-            Notification.objects.create(receiver=request.user,type=NotificationTypes.NEW_LESSON,title="Yangi dars boshlandi")
-            return render(request,)
+            lesson = form.save()
+            notifications = []
+            notifications.append(Notification(receiver=request.user,type=NotificationTypes.NEW_LESSON,title="Yangi dars boshlandi"))
+            return redirect('teacher-groups')
