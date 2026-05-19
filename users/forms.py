@@ -15,5 +15,18 @@ class UserForm(forms.ModelForm):
             'role',
             'balance',
             'branch',
+            'gender',
             'is_active',
+        ]
+
+
+class AdminStudentCreateForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = [
+            'first_name',
+            'last_name',
+            'phone',
+            'role',
+            'gender'
         ]
