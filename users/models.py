@@ -20,7 +20,9 @@ class User(AbstractUser):
     )
     phone = models.CharField(
         max_length=20,
-        unique=True
+        unique=True,
+        null=True,
+        blank=True
     )
     avatar = models.ImageField(
         upload_to='users/avatars/',

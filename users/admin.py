@@ -16,3 +16,36 @@ class CustomUserAdmin(UserAdmin):
     )
 
     ordering = ['-id']
+
+    fieldsets = UserAdmin.fieldsets + (
+        (
+            "Qo'shimcha ma'lumotlar",
+            {
+                'fields': (
+                    'phone',
+                    'avatar',
+                    'role',
+                    'balance',
+                    'branch',
+                    'gender',
+                )
+            }
+        ),
+    )
+
+    add_fieldsets = UserAdmin.add_fieldsets + (
+        (
+            "Qo'shimcha ma'lumotlar",
+            {
+                'classes': ('wide',),
+                'fields': (
+                    'first_name',
+                    'last_name',
+                    'phone',
+                    'role',
+                    'branch',
+                    'gender',
+                ),
+            },
+        ),
+    )
