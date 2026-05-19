@@ -16,15 +16,6 @@ class TeacherCollectingGroupListView(LoginRequiredMixin,UserPassesTestMixin,View
 
         return render(request,'teacher/collecting_groups.html',context={"groups":groups})
 
-### View: `TeacherLessonCreateView`
-# **Mas'ul:** Xazratbek
-# **Vazifa:** Yangi lesson yaratish.
-
-# **Logika:**
-# 1. Teacher groupga tegishli ekanligi tekshiriladi.
-# 2. Lesson sanasi, mavzu, material validatsiya.
-# 3. Lesson yaratilgach guruh studentlariga notification queue qilinadi.
-
 class TeacherLessonCreateView(LoginRequiredMixin, UserPassesTestMixin, View):
     def test_func(self):
         return self.request.user.is_authenticated and self.request.user.role == Roles.TEACHER
@@ -38,5 +29,7 @@ class TeacherLessonCreateView(LoginRequiredMixin, UserPassesTestMixin, View):
         if form.is_valid():
             lesson = form.save()
             notifications = []
-            notifications.append(Notification(receiver=request.user,type=NotificationTypes.NEW_LESSON,title="Yangi dars boshlandi"))
+            for student in lesson.lesson_group.group.students.all():
+                notifications.append(Notification(receiver=student.student,type=NotificationTypes.NEW_LESSON,title=f"{student.student.get_full_name()}-Yangi dars boshlandi"))
+            Notification.objects.bulk_create(notifications)
             return redirect('teacher-groups')

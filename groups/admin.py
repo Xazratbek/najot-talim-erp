@@ -19,7 +19,6 @@ class GroupAdmin(admin.ModelAdmin):
 
     ordering = ['-id']
 
-
 @admin.register(GroupTeacher)
 class GroupTeacherAdmin(admin.ModelAdmin):
 
@@ -30,6 +29,7 @@ class GroupTeacherAdmin(admin.ModelAdmin):
     )
 
     ordering = ['-id']
+    list_select_related = ('teacher',)
 
 
 @admin.register(GroupStudent)
@@ -40,7 +40,7 @@ class GroupStudentAdmin(admin.ModelAdmin):
         'group',
         'student',
     )
-    list_select_related = ('group', 'student')
+    list_select_related = ('student',)
 
     ordering = ['-id']
 
@@ -53,5 +53,5 @@ class GroupLessonAdmin(admin.ModelAdmin):
         'group',
         'lesson_id',
     )
-
+    list_select_related = ('lesson',)
     ordering = ['-id']
