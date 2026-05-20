@@ -1,0 +1,16 @@
+{% extends "teachers/base_teachers.html" %}
+{% block page_title %}Yig'ilayotgan guruhlar{% endblock page_title %}
+{% block content %}
+<section class="panel-head">
+    <h1>Yig'ilayotgan guruhlar</h1>
+</section>
+<section class="card-grid">
+    {% for group in groups %}
+    <article class="card">
+        <h2>{{ group.group.name }}</h2>
+    </article>
+    {% empty %}
+    <div class="empty-state"><p class="muted">Yig'ilayotgan guruhlar yo'q.</p></div>
+    {% endfor %}
+</section>
+{% endblock content %}

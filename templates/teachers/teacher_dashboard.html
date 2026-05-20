@@ -1,12 +1,34 @@
 {% extends "teachers/base_teachers.html" %}
-{% block title %}Teacher Dashboard{% endblock title %}
+
+{% block page_title %}Teacher Dashboard{% endblock page_title %}
+
 {% block content %}
-<h2>Sizning Guruhlaringiz:</h2><br>
-{% for group in groups  %}
-<h3>Guruh nomi: <a href="{% url 'teacher_group_detail' group.group.pk %}">{{ group.group.name }}</a></h3>
-<h3>Kursi nomi: {{ group.group.course.title }}</h3>
-<h3>Yo'nalish nomi: {{ group.group.course.category.title }}</h3>
-<h3>Boshlangan vaqti: {{ group.group.started_at }}</h3>
-<h3>Akamediklar: {{ group.group.group_teachers.count }}</h3>
-{% endfor %}
+<section class="panel-head">
+    <h1>Sizning guruhlaringiz</h1>
+    <p class="muted">Siz dars berayotgan guruhlar ro'yxati va qisqa ma'lumotlar.</p>
+</section>
+
+{% if groups %}
+<section class="card-grid">
+    {% for group in groups %}
+    <article class="card">
+        <div class="card__header">
+            <h2><a href="{% url 'teacher_group_detail' group.group.pk %}">{{ group.group.name }}</a></h2>
+            <span class="pill">Faol</span>
+        </div>
+        <ul class="meta-list">
+            <li><span>Kurs:</span> {{ group.group.course.title }}</li>
+            <li><span>Yo'nalish:</span> {{ group.group.course.category.title }}</li>
+            <li><span>Boshlanish:</span> {{ group.group.started_at|date:"d M Y" }}</li>
+            <li><span>Akademiklar:</span> {{ group.group.group_teachers.count }}</li>
+        </ul>
+    </article>
+    {% endfor %}
+</section>
+{% else %}
+<div class="empty-state">
+    <h3>Hozircha guruh topilmadi</h3>
+    <p class="muted">Yangi guruh biriktirilganda shu yerda ko'rinadi.</p>
+</div>
+{% endif %}
 {% endblock content %}

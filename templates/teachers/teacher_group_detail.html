@@ -1,34 +1,59 @@
 {% extends "teachers/base_teachers.html" %}
-{% block title %}Teacher Group detail{% endblock title %}
-{% block content %}
-<h2>Guruh nomi </h2><br>
-<h2>{{ guruh.name }}</h2>
-<h2>Guruh talabalari: </h2><br>
-{% for student in students %}
-    {{ student.get_full_name }}
-{% endfor %}
-<h2>Uyga vazifa va dars nomlari: </h2><br>
-{% comment %} {% for dars in guruh_darslari %}
-    {% for homework in dars.homeworks.all %}
-        <h3>Dars: {{dars.lesson.title}} | Berilgan sanasi: {{dars.lesson.lesson_date}} | Uyga vazifa berilgan sana: {{homework.created_at}} | Tugash vaqti: {{homework.deadline}}</h3>
-    {% endfor %}
-{% endfor %} {% endcomment %}
 
-<br>
-<br>
-<br>
-<br>
-{% for data in guruh_uyga_vazifalari %}
-    <h2>{{ data.homework.id }}</h2>
-    <h2>Mavzu: {{ data.dars }}</h2>
-    <h2>Dars sanasi: {{data.dars_sanasi }}</h2>
-    <h2>Homework description: {{ data.homework.description }}</h2>
-    <h2>Student id: {{ data.homework.student.id }}</h2>
-    <h3>
-        Topshirganlar: {{ data.homework.get_submission_stats.topshirganlar }}<br>
-        Topshirmaganlar: {{ data.homework.get_submission_stats.topshirmaganlar }}<br>
-        Tekshirilganlar: {{ data.homework.get_submission_stats.tekshirilganlar }}<br>
-    </h3>
-{% endfor %}
+{% block page_title %}{{ guruh.name }} | Group detail{% endblock page_title %}
+
+{% block content %}
+<section class="panel-head">
+    <h1>{{ guruh.name }}</h1>
+    <p class="muted">Guruh ichidagi talabalar va uyga vazifalar holati.</p>
+</section>
+
+<section class="panel">
+    <h2>Talabalar ({{ students|length }})</h2>
+    {% if students %}
+    <div class="student-list">
+        {% for student in students %}
+            <span class="student-chip">{{ student.get_full_name }}</span>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="muted">Bu guruhda hali talaba mavjud emas.</p>
+    {% endif %}
+</section>
+
+<section class="panel">
+    <h2>Uyga vazifalar</h2>
+    {% if guruh_uyga_vazifalari %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Mavzu</th>
+                    <th>Dars sanasi</th>
+                    <th>Tavsif</th>
+                    <th>Topshirgan</th>
+                    <th>Topshirmagan</th>
+                    <th>Tekshirilgan</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for data in guruh_uyga_vazifalari %}
+                <tr>
+                    <td>{{ data.homework.id }}</td>
+                    <td>{{ data.dars }}</td>
+                    <td>{{ data.dars_sanasi|date:"d M Y" }}</td>
+                    <td>{{ data.homework.description|truncatechars:70 }}</td>
+                    <td>{{ data.homework.get_submission_stats.topshirganlar }}</td>
+                    <td>{{ data.homework.get_submission_stats.topshirmaganlar }}</td>
+                    <td>{{ data.homework.get_submission_stats.tekshirilganlar }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="muted">Uyga vazifalar hali qo'shilmagan.</p>
+    {% endif %}
+</section>
 {% endblock content %}
-<h3>{{ group }}</h3>
