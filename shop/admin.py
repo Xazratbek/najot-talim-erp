@@ -14,6 +14,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_display = ('id', 'title', 'category', 'price', 'stock')
     search_fields = ('title',)
     ordering = ['-id']
+    list_select_related = ['category']
 
 
 @admin.register(Order)
@@ -21,3 +22,4 @@ class OrderAdmin(admin.ModelAdmin):
     list_display = ('id', 'student', 'product')
     search_fields = ('student__username', 'product__title')
     ordering = ['-id']
+    list_select_related = ['student','product']

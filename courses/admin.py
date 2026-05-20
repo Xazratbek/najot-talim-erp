@@ -8,11 +8,10 @@ class CourseCategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
-
     list_display = (
         'id',
         'title',
         'category'
     )
-
+    list_select_related = ['category']
     ordering = ['-id']

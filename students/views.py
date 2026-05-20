@@ -238,11 +238,14 @@ class StudentLessonDetailView(StudentRequiredMixin, View):
                 .select_related("checked_by")
                 .first()
             )
+            if homework.deadline >= timezone.now():
+                can_submit = True
+
             if submission:
                 submission_files = list(submission.homeworksubmission_files.all())
                 description = submission.description
-            if homework.deadline >= timezone.now():
-                can_submit = True
+                can_submit = False
+
             elif (
                 submission
                 and submission.status == HomeWorkStatusChoices.REJECTED
@@ -551,21 +554,3 @@ class StudentSettingsView(StudentRequiredMixin, View):
 class StudentPasswordChangeView(StudentRequiredMixin, PasswordChangeView):
     template_name = "students/password_change.html"
     success_url = reverse_lazy("student-settings")
-
-class StudentRateLessonView(StudentRequiredMixin,View):
-    def post(self, request):
-        student = request.user
-        lesson_id = request.POST.get('lesson_id')
-        star = request.POST.get('star')
-        description = request.POST.get('description')
-        lesson = Lesson.objects.filter(lesson_id=lesson).first()
-        if lesson_id and lesson:
-            rate = LessonRating.objects.filter(lesson=lesson,rated_by=student).exists()
-            if rate:
-                messages.info(request,"Siz oldin bu darsga baxo bergansiz")
-                return JsonResponse({"message":"Siz oldin bu darsga baxo bergansiz","status":400})
-            else:
-                LessonRating.objects.create(lesson=lesson,rated_by=student,star=star,description=description)
-                return JsonResponse({"message":f"{lesson.title}-darsi baholandi","status":201})
-
-        return JsonResponse({"message":"Dars topilmadi","status":404})

@@ -1,12 +1,9 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-
 from .models import User
-
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
-
     list_display = (
         'id',
         'username',
@@ -14,9 +11,7 @@ class CustomUserAdmin(UserAdmin):
         'last_name',
         'role',
     )
-
     ordering = ['-id']
-
     fieldsets = UserAdmin.fieldsets + (
         (
             "Qo'shimcha ma'lumotlar",
@@ -32,7 +27,6 @@ class CustomUserAdmin(UserAdmin):
             }
         ),
     )
-
     add_fieldsets = UserAdmin.add_fieldsets + (
         (
             "Qo'shimcha ma'lumotlar",
@@ -49,3 +43,4 @@ class CustomUserAdmin(UserAdmin):
             },
         ),
     )
+    list_select_related = ['branch']

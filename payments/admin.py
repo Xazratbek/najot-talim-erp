@@ -9,3 +9,4 @@ class PaymentAdmin(admin.ModelAdmin):
     list_filter = ('payment_type',)
     search_fields = ('student__username', 'student__phone')
     ordering = ['-id']
+    list_select_related = ['student',]

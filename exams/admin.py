@@ -12,6 +12,7 @@ class ExamAdmin(admin.ModelAdmin):
     list_filter = ('allow_resubmission',)
     search_fields = ('title', 'group__name')
     ordering = ['-id']
+    list_select_related = ['group']
 
 
 @admin.register(ExamSubmission)
@@ -20,3 +21,5 @@ class ExamSubmissionAdmin(admin.ModelAdmin):
     list_display = ('id', 'exam', 'student', 'checked_by', 'checked_at')
     search_fields = ('student__username', 'exam__title')
     ordering = ['-id']
+    list_select_related = ['exam','student','checked_by']
+    list_prefetch_related = ['files']
