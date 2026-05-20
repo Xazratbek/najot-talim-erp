@@ -193,7 +193,7 @@ class TeacherLessonDetailView(TeacherRequiredMixin, View):
         group = get_object_or_404(Group.objects.filter(teachers__teacher=request.user), pk=pk)
         lesson = get_object_or_404(GroupLesson.objects.select_related("lesson"), pk=lesson_id, group=group)
         homework = Homework.objects.filter(group_lesson=lesson).first()
-        submissions = HomeworkSubmission.objects.filter(homework=homework).select_related("student").prefetch_related("homeworksubmission_files") if homework else []
+        submissions = HomeworkSubmission.objects.filter(homework=homework,status='waiting').select_related("student").prefetch_related("homeworksubmission_files") if homework else []
         return render(request, self.template_name, {"guruh": group, "lesson": lesson, "homework": homework, "submissions": submissions})
 
 
