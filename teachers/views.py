@@ -8,7 +8,7 @@ from django.views import View
 from exams.models import Exam
 from attendance.models import Attendance, Status
 from groups.models import Group, GroupLesson
-from homeworks.models import HomeWorkStatusChoices, Homework, HomeworkSubmission
+from homeworks.models import HomeWorkStatusChoices, Homework, HomeworkFiles, HomeworkSubmission
 from notifications.models import Notification, NotificationTypes
 from users.models import Roles
 
@@ -85,7 +85,7 @@ class TeacherGroupDetailView(TeacherRequiredMixin, View):
                 messages.success(request, "Uyga vazifa saqlandi.")
             else:
                 messages.error(request, "Tavsif va deadline majburiy.")
-        return redirect(f"{request.path}?tab=materials&material_tab=lessons")
+        return redirect("teacher-homework-create", pk=pk)
 
     def get(self, request, pk):
         group = self.get_group(request, pk)
@@ -126,6 +126,51 @@ class TeacherGroupDetailView(TeacherRequiredMixin, View):
         )
 
 
+class TeacherHomeworkCreateView(TeacherRequiredMixin, View):
+    template_name = "teachers/teacher_homework_form.html"
+
+    def get_group(self, request, pk):
+        return get_object_or_404(
+            Group.objects.filter(teachers__teacher=request.user)
+            .select_related("course", "branch")
+            .prefetch_related("teachers__teacher", "students__student"),
+            pk=pk,
+        )
+
+    def get(self, request, pk):
+        group = self.get_group(request, pk)
+        lessons = GroupLesson.objects.filter(group=group).select_related("lesson").order_by("-lesson__lesson_date")
+        return render(request, self.template_name, {"guruh": group, "lessons": lessons, "sidebar_section": "homeworks"})
+
+    def post(self, request, pk):
+        group = self.get_group(request, pk)
+        group_lesson = get_object_or_404(GroupLesson, pk=request.POST.get("lesson_id"), group=group)
+        description = request.POST.get("description", "").strip()
+        deadline = request.POST.get("deadline")
+        video_file = request.FILES.get("video_file")
+
+        if not description or not deadline:
+            messages.error(request, "Tavsif va deadline majburiy.")
+            return redirect("teacher-homework-create", pk=pk)
+
+        homework, _ = Homework.objects.update_or_create(
+            group_lesson=group_lesson,
+            defaults={"description": description, "deadline": deadline, "video_file": video_file},
+        )
+
+        for f in request.FILES.getlist("context_files"):
+            HomeworkFiles.objects.create(homework=homework, file=f)
+
+        for gs in group.students.select_related("student"):
+            Notification.objects.create(
+                receiver=gs.student,
+                type=NotificationTypes.NEW_LESSON,
+                title=f"{group.name}: {group_lesson.lesson.title} darsiga uyga vazifa qo'shildi",
+            )
+        messages.success(request, "Uyga vazifa saqlandi.")
+        return redirect("teacher_group_detail", pk=pk)
+
+
 class TeacherLessonDetailView(TeacherRequiredMixin, View):
     template_name = "teachers/teacher_lesson_detail.html"
 
@@ -135,6 +180,8 @@ class TeacherLessonDetailView(TeacherRequiredMixin, View):
             sub = get_object_or_404(HomeworkSubmission, pk=request.POST.get("submission_id"), homework__group_lesson_id=lesson_id, homework__group_lesson__group=group)
             sub.status = request.POST.get("status", HomeWorkStatusChoices.WAITING)
             sub.teacher_comment = request.POST.get("teacher_comment", "")
+            score = request.POST.get("score")
+            sub.score = int(score) if score and score.isdigit() else None
             sub.checked_by = request.user
             sub.checked_at = timezone.now()
             sub.allow_resubmission = request.POST.get("allow_resubmission") == "on"
@@ -146,7 +193,7 @@ class TeacherLessonDetailView(TeacherRequiredMixin, View):
         group = get_object_or_404(Group.objects.filter(teachers__teacher=request.user), pk=pk)
         lesson = get_object_or_404(GroupLesson.objects.select_related("lesson"), pk=lesson_id, group=group)
         homework = Homework.objects.filter(group_lesson=lesson).first()
-        submissions = HomeworkSubmission.objects.filter(homework=homework,status='waiting').select_related("student") if homework else []
+        submissions = HomeworkSubmission.objects.filter(homework=homework).select_related("student").prefetch_related("homeworksubmission_files") if homework else []
         return render(request, self.template_name, {"guruh": group, "lesson": lesson, "homework": homework, "submissions": submissions})
 
 

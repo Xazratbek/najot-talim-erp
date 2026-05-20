@@ -51,19 +51,17 @@
     <p><a href="{% url 'student-group-detail' group_lesson.group_id %}" class="muted">← {{ group_lesson.group.name }}</a></p>
     <h1>{{ group_lesson.lesson.title }}</h1>
 
+    {% if homework and homework.video_file %}
+    <div class="card" style="margin-bottom:1rem;">
+      <h3>Uyga vazifa videosi</h3>
+      <video controls src="{{ homework.video_file.url }}" style="max-width:420px;width:100%;"></video>
+    </div>
+    {% endif %}
+
     {% if homework_files %}
     <div class="card" style="margin-bottom:1rem;">
-      <h3>Videolar / materiallar</h3>
-      <div class="video-carousel">
-        {% for hf in homework_files %}
-        <div>
-          {% if hf.file.url %}
-          <video controls src="{{ hf.file.url }}" style="max-width:320px;"></video>
-          {% endif %}
-          <p class="muted">{{ hf.file.name }}</p>
-        </div>
-        {% endfor %}
-      </div>
+      <h3>Qo'shimcha fayllar</h3>
+      {% for hf in homework_files %}<p><a href="{{ hf.file.url }}" target="_blank">📎 {{ hf.file.name }}</a></p>{% endfor %}
     </div>
     {% endif %}
 
@@ -112,6 +110,7 @@
       {% elif submission.status == 'waiting' %}
       <p class="badge badge-blue">Tekshiruv kutilmoqda</p>
       {% endif %}
+      {% if submission.score %}<p><strong>Score:</strong> {{ submission.score }}</p>{% endif %}
       {% if submission.teacher_comment %}
       <p>{{ submission.teacher_comment }}</p>
       {% endif %}

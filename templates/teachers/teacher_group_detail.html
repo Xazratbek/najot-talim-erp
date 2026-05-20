@@ -14,7 +14,8 @@
 </div>
 {% else %}
 <div style="display:flex;justify-content:flex-end;margin:8px 0 12px;">
-  <details>
+  <a class="btn btn-primary" href="{% url 'teacher-homework-create' guruh.id %}">+ Uyga vazifa qo'shish</a>
+  <details style="display:none;">
     <summary class="btn">Uyga vazifa qo'shish</summary>
     <form method="post" class="card" style="min-width:350px;">{% csrf_token %}
       <input type="hidden" name="action" value="create_homework">
