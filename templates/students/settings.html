@@ -16,17 +16,12 @@
         <p class="muted">500x500, JPEG/PNG, maks 2MB</p>
       </div>
       <div>
-        <p><label>Ism</label><br><input type="text" name="first_name" value="{{ student.first_name }}" style="width:100%;"></p>
-        <p><label>Familiya</label><br><input type="text" name="last_name" value="{{ student.last_name }}" style="width:100%;"></p>
-        <p><label>Telefon</label><br><input type="text" name="phone" value="{{ student.phone }}" style="width:100%;"></p>
-        <p><label>Jinsi</label><br>
-          <select name="gender" style="width:100%;">
-            <option value="">—</option>
-            <option value="male" {% if student.gender == 'male' %}selected{% endif %}>Erkak</option>
-            <option value="female" {% if student.gender == 'female' %}selected{% endif %}>Ayol</option>
-          </select>
-        </p>
+        <p><label>Ism</label><br><input type="text" value="{{ student.first_name }}" style="width:100%;" disabled></p>
+        <p><label>Familiya</label><br><input type="text" value="{{ student.last_name }}" style="width:100%;" disabled></p>
+        <p><label>Telefon</label><br><input type="text" value="{{ student.phone }}" style="width:100%;" disabled></p>
+        <p><label>Jinsi</label><br><input type="text" value="{% if student.gender == 'male' %}Erkak{% elif student.gender == 'female' %}Ayol{% else %}—{% endif %}" style="width:100%;" disabled></p>
         <p class="muted">HH ID: {{ student.username }}</p>
+        <p class="muted">Talaba faqat avatarini bu bo'limda o'zgartira oladi.</p>
       </div>
     </div>
     <button type="submit" class="btn btn-primary">Saqlash</button>
