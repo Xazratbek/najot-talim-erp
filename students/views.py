@@ -20,6 +20,7 @@ from shop.models import Category, Order, Product
 from users.models import Roles, User
 from lessons.models import LessonRating, Lesson
 from django.http import JsonResponse
+from django_request_cache import cache_for_request
 
 LEVEL_XP_STEP = 375
 
@@ -30,6 +31,7 @@ class StudentRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
             and self.request.user.role == Roles.STUDENT
         )
 
+    @cache_for_request
     def stats(self):
         student = self.request.user
         xp_agg = XP.objects.filter(student=student).aggregate(
@@ -55,6 +57,7 @@ class StudentRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
             "rating": rating,
         }
 
+    @cache_for_request
     def sidebar(self):
         s = self.stats()
         return {"sidebar_kumush": s["total_kumush"], "sidebar_level": s["level"]}
@@ -129,7 +132,6 @@ class StudentGroupsView(StudentRequiredMixin, View):
         groups = groups.select_related("course", "course__category").prefetch_related(
             "teachers__teacher"
         )
-
         return render(
             request,
             self.template_name,
@@ -151,8 +153,8 @@ class StudentGroupDetailView(StudentRequiredMixin, View):
         )
 
         rows = []
-        for gl in GroupLesson.objects.filter(group=group).select_related("lesson"):
-            homework = Homework.objects.filter(group_lesson=gl).first()
+        for gl in GroupLesson.objects.filter(group=group).select_related("lesson",'group'):
+            homework = Homework.objects.filter(group_lesson=gl).select_related('group_lesson').prefetch_related('homework_files').first()
             if not homework:
                 status_key, status_label, video_count = "not_assigned", "Berilmagan", 0
                 deadline = None
@@ -169,6 +171,7 @@ class StudentGroupDetailView(StudentRequiredMixin, View):
                 deadline = homework.deadline
 
             if status_filter and status_key != status_filter:
+                print("mashi ishladi")
                 continue
 
             rows.append(
