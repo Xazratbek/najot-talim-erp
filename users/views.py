@@ -11,8 +11,10 @@ from .models import Roles
 def redirect_after_login(user):
     if user.role == Roles.STUDENT:
         return reverse("student-dashboard")
+
     if user.role in (Roles.TEACHER, Roles.SUPPORT_TEACHER):
         return "/admin/"
+
     if user.is_staff or user.is_superuser:
         return "/admin/"
     return reverse("student-dashboard")

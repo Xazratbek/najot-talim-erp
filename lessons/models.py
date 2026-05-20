@@ -31,6 +31,7 @@ class LessonRating(TimeStampedModel):
         db_table = 'lesson_ratings'
         verbose_name = "Dars baxosi"
         verbose_name_plural = "Dars baxolari"
+        unique_together = ['lesson','rated_by']
 
     def __str__(self):
         return f"Dars: {self.lesson.title}-baxosi: {self.star} | Rated by: {self.rated_by.get_full_name()}"

@@ -1,7 +1,10 @@
 from django.contrib import admin
 
-from .models import Exam, ExamSubmission
+from .models import Exam, ExamSubmission, ExamsubmissionFiles
 
+class ExamsubmissionFilesInline(admin.TabularInline):
+    model = ExamsubmissionFiles
+    extra = 3
 
 @admin.register(Exam)
 class ExamAdmin(admin.ModelAdmin):
@@ -13,6 +16,7 @@ class ExamAdmin(admin.ModelAdmin):
 
 @admin.register(ExamSubmission)
 class ExamSubmissionAdmin(admin.ModelAdmin):
+    inlines = [ExamsubmissionFilesInline]
     list_display = ('id', 'exam', 'student', 'checked_by', 'checked_at')
     search_fields = ('student__username', 'exam__title')
     ordering = ['-id']

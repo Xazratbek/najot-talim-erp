@@ -129,44 +129,59 @@ USE_I18N = True
 
 USE_TZ = True
 
-STATIC_URL = 'static/'
-STATICFILES_DIRS = [
-    BASE_DIR / "static/",
-]
-
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'student-dashboard'
 LOGOUT_REDIRECT_URL = 'login'
 
 AUTH_USER_MODEL = 'users.User'
 
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media/"
+USE_S3_STORAGE = env.bool('USE_S3_STORAGE', default=True)
 
+STATICFILES_DIRS = [BASE_DIR / 'static']
 
-SUPABASE_PROJECT_ID = env('SUPABASE_PROJECT_ID')
+if USE_S3_STORAGE:
+    SUPABASE_PROJECT_ID = env('SUPABASE_PROJECT_ID')
+    AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY')
+    AWS_STORAGE_BUCKET_NAME = env(
+        'AWS_STORAGE_BUCKET_NAME',
+        default='najot-talim-erp-bucket',
+    )
 
-AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY')
+    AWS_S3_ENDPOINT_URL = (
+        f'https://{SUPABASE_PROJECT_ID}.storage.supabase.co/storage/v1/s3'
+    )
+    AWS_S3_CUSTOM_DOMAIN = (
+        f'{SUPABASE_PROJECT_ID}.supabase.co/storage/v1/object/public/'
+        f'{AWS_STORAGE_BUCKET_NAME}'
+    )
 
-AWS_STORAGE_BUCKET_NAME = env('AWS_STORAGE_BUCKET_NAME')
+    AWS_DEFAULT_ACL = None
+    AWS_S3_FILE_OVERWRITE = True
+    AWS_QUERYSTRING_AUTH = False
+    AWS_S3_SIGNATURE_VERSION = 's3v4'
+    AWS_S3_ADDRESSING_STYLE = 'path'
 
-AWS_STORAGE_BUCKET_NAME = 'najot-talim-erp-bucket'
+    STORAGES = {
+        'default': {
+            'BACKEND': 'storages.backends.s3.S3Storage',
+            'OPTIONS': {
+                'location': 'media',
+                'file_overwrite': True,
+            },
+        },
+        'staticfiles': {
+            'BACKEND': 'storages.backends.s3.S3StaticStorage',
+            'OPTIONS': {
+                'location': 'static',
+            },
+        },
+    }
 
-AWS_S3_ENDPOINT_URL = f'https://{SUPABASE_PROJECT_ID}.storage.supabase.co/storage/v1/s3'
-AWS_S3_CUSTOM_DOMAIN = f'{SUPABASE_PROJECT_ID}.supabase.co/storage/v1/object/public/{AWS_STORAGE_BUCKET_NAME}'
-
-AWS_DEFAULT_ACL = None
-AWS_S3_FILE_OVERWRITE = True
-AWS_QUERYSTRING_AUTH = False
-
-AWS_S3_SIGNATURE_VERSION = 's3v4'
-
-STORAGES = {
-    "default": {
-        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-    },
-    "staticfiles": {
-        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-    },
-}
+    STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/static/'
+    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
+else:
+    STATIC_URL = '/static/'
+    STATIC_ROOT = BASE_DIR / 'staticfiles'
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = BASE_DIR / 'media'

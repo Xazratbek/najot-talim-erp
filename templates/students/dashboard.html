@@ -12,18 +12,5 @@
     <h3>Reyting</h3>
     <p>Umumiy: <strong>{{ overall_rank }}</strong> - o'rin</p>
   </div>
-  <div class="card calendar-wrap">
-    <h3>Dars jadvali</h3>
-    <p class="muted">{{ calendar_month }}</p>
-    {% include "students/partials/calendar.html" with calendar_cells=calendar_cells %}
-    {% if upcoming_lessons %}
-    <h4 style="margin-top:1rem;">Yaqin darslar</h4>
-    <ul>
-      {% for gl in upcoming_lessons %}
-      <li><a href="{% url 'student-lesson-detail' gl.pk %}">{{ gl.lesson.title }}</a> — {{ gl.lesson.lesson_date|date:"d M, Y" }}</li>
-      {% endfor %}
-    </ul>
-    {% endif %}
-  </div>
 </div>
 {% endblock %}

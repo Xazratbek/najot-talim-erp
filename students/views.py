@@ -1,4 +1,3 @@
-import calendar as cal_module
 from datetime import date, timedelta
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -17,6 +16,8 @@ from notifications.models import NotificationPreference
 from payments.models import Payment
 from shop.models import Category, Order, Product
 from users.models import Roles, User
+from lessons.models import LessonRating, Lesson
+from django.http import JsonResponse
 
 LEVEL_XP_STEP = 375
 
@@ -61,52 +62,12 @@ class StudentDashboardView(StudentRequiredMixin, View):
     template_name = "students/dashboard.html"
 
     def get(self, request):
-        student = request.user
-        today = date.today()
-        my_groups = Group.objects.filter(students__student=student).distinct()
-        active_groups = my_groups.filter(
-            Q(ended_at__isnull=True) | Q(ended_at__gte=today)
-        )
-
-        calendar_lessons = (
-            GroupLesson.objects.filter(
-                group__students__student=student,
-                group__in=active_groups,
-            )
-            .select_related("lesson", "group")
-            .order_by("lesson__lesson_date")
-        )
-        lesson_dates = {gl.lesson.lesson_date for gl in calendar_lessons}
-        calendar_cells = []
-        for day in cal_module.Calendar(firstweekday=0).monthdatescalendar(
-            today.year, today.month
-        ):
-            for d in day:
-                if d.month != today.month:
-                    calendar_cells.append({"empty": True})
-                else:
-                    calendar_cells.append(
-                        {
-                            "empty": False,
-                            "day": d.day,
-                            "has_lesson": d in lesson_dates,
-                            "is_today": d == today,
-                        }
-                    )
-
-        upcoming = [
-            gl for gl in calendar_lessons if gl.lesson.lesson_date >= today
-        ][:10]
-
         return render(
             request,
             self.template_name,
             {
                 **self.stats(),
-                **self.sidebar(),
-                "calendar_cells": calendar_cells,
-                "upcoming_lessons": upcoming,
-                "calendar_month": today.strftime("%B %Y"),
+                **self.sidebar()
             },
         )
 
@@ -414,6 +375,7 @@ class StudentRankingView(StudentRequiredMixin, View):
 
         if scope == "branch" and student.branch_id:
             qs = qs.filter(branch_id=student.branch_id)
+
         elif scope == "group":
             group_ids = GroupStudent.objects.filter(student=student).values_list(
                 "group_id", flat=True
@@ -557,3 +519,21 @@ class StudentSettingsView(StudentRequiredMixin, View):
 class StudentPasswordChangeView(StudentRequiredMixin, PasswordChangeView):
     template_name = "students/password_change.html"
     success_url = reverse_lazy("student-settings")
+
+class StudentRateLessonView(StudentRequiredMixin,View):
+    def post(self, request):
+        student = request.user
+        lesson_id = request.POST.get('lesson_id')
+        star = request.POST.get('star')
+        description = request.POST.get('description')
+        lesson = Lesson.objects.filter(lesson_id=lesson).first()
+        if lesson_id and lesson:
+            rate = LessonRating.objects.filter(lesson=lesson,rated_by=student).exists()
+            if rate:
+                messages.info(request,"Siz oldin bu darsga baxo bergansiz")
+                return JsonResponse({"message":"Siz oldin bu darsga baxo bergansiz","status":400})
+            else:
+                LessonRating.objects.create(lesson=lesson,rated_by=student,star=star,description=description)
+                return JsonResponse({"message":f"{lesson.title}-darsi baholandi","status":201})
+
+        return JsonResponse({"message":"Dars topilmadi","status":404})

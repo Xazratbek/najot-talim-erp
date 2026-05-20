@@ -25,6 +25,8 @@ urlpatterns = [
 ]
 
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])
+    if not str(settings.STATIC_URL).startswith('http'):
+        urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    if getattr(settings, 'MEDIA_ROOT', None):
+        urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += debug_toolbar_urls()
