@@ -20,6 +20,7 @@ class HomeworkAdmin(admin.ModelAdmin):
     inlines = [HomeworkFilesInline,HomeworkSubmissionsInline]
     list_display = ('id', 'group_lesson', 'description','deadline', 'created_at')
     ordering = ['-id']
+    search_fields = ['group_lesson__lesson__id']
     list_select_related = ['group_lesson',]
 
 

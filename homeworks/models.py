@@ -42,7 +42,6 @@ class HomeworkFiles(TimeStampedModel):
     homework = models.ForeignKey(Homework,on_delete=models.CASCADE,related_name='homework_files')
     file = models.FileField(upload_to='homeworks/')
 
-
     class Meta:
         db_table = 'homework_files'
 

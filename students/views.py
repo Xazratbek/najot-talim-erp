@@ -405,7 +405,7 @@ class StudentRankingView(StudentRequiredMixin, View):
 
         xp_filter = Q()
         if period_start:
-            xp_filter = Q(xps__created_at__gte=period_start)
+            xp_filter = Q(xps__created_at__date__gte=period_start)
 
         qs = User.objects.filter(role=Roles.STUDENT).annotate(
             total_xp=Sum("xps__amount", filter=xp_filter)

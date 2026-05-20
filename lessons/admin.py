@@ -1,5 +1,8 @@
 from django.contrib import admin
 from .models import Lesson, LessonRating
+from groups.models import GroupLesson
+from homeworks.models import Homework
+
 
 @admin.register(Lesson)
 class LessonAdmin(admin.ModelAdmin):

@@ -20,5 +20,9 @@
     <main class="container page">
         {% block content %}{% endblock content %}
     </main>
+    <form action="{% url 'logout' %}" method="post">
+        {% csrf_token %}
+        <button type="submit">Tizimdan chiqish</button>
+    </form>
 </body>
 </html>
