@@ -45,7 +45,7 @@
     <form method="post">
       {% csrf_token %}
       <input type="hidden" name="product_id" value="{{ product.id }}">
-      {% if request.user.balance >= product.price %}
+      {% if kumushlar >= product.price %}
       <button type="submit" class="btn btn-green">Kumushingiz yetarli</button>
       {% else %}
       <button type="button" class="btn btn-ghost" disabled>Yetarli emas</button>

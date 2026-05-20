@@ -37,7 +37,7 @@ class StudentRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
             total_kumush=Sum("kumushlar"),
         )
         total_xp = xp_agg["total_xp"] or 0
-        total_kumush = xp_agg["total_kumush"] or student.balance
+        total_kumush = xp_agg["total_kumush"]
         rating = Rating.objects.filter(student=student).first()
         level = rating.level if rating else 1
         higher = (
@@ -462,7 +462,7 @@ class StudentShopView(StudentRequiredMixin, View):
         if search:
             products = products.filter(title__icontains=search)
         if affordable:
-            products = products.filter(price__lte=student.balance)
+            products = products.filter(price__lte=self.stats().get('total_kumush'))
 
         return render(
             request,
@@ -474,6 +474,7 @@ class StudentShopView(StudentRequiredMixin, View):
                     "product"
                 ),
                 "categories": Category.objects.all(),
+                'kumushlar': self.stats().get('total_kumush'),
                 "filters": {
                     "category": category,
                     "price_from": price_from,
@@ -488,13 +489,14 @@ class StudentShopView(StudentRequiredMixin, View):
     def post(self, request):
         student = request.user
         product = get_object_or_404(Product, pk=request.POST.get("product_id"))
-        if student.balance < product.price:
+        if self.stats().get('total_kumush') < product.price:
             messages.error(request, "Kumushingiz yetarli emas.")
         elif product.stock < 1:
             messages.error(request, "Mahsulot tugagan.")
         else:
-            student.balance -= product.price
-            student.save(update_fields=["balance"])
+            student_xp_balance = student.xps.all().order_by('-id').first()
+            student_xp_balance.kumushlar -= product.price
+            student_xp_balance.save()
             product.stock -= 1
             product.save(update_fields=["stock"])
             Order.objects.create(student=student, product=product)
