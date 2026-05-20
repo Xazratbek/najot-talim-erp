@@ -2,6 +2,7 @@ from django.db import models
 from common.models import TimeStampedModel
 from groups.models import GroupLesson
 from users.models import User
+from django.db.models import Q, Count
 
 class HomeWorkStatusChoices(models.TextChoices):
     WAITING = "waiting","Kutayotganlar"
@@ -27,6 +28,15 @@ class Homework(TimeStampedModel):
 
     def __str__(self):
         return self.description
+
+    def get_submission_stats(self):
+        stats = self.submissions.aggregate(
+            topshirganlar=Count('id',filter=Q(status=HomeWorkStatusChoices.WAITING),
+            topshirmaganlar=Count('id',filter=Q(status=HomeWorkStatusChoices.NOT_SUBMITTED)),
+            tekshirilganlar=Count('id',filter=Q(HomeWorkStatusChoices.APPROVED))
+        )
+        )
+        return stats
 
 class HomeworkFiles(TimeStampedModel):
     homework = models.ForeignKey(Homework,on_delete=models.CASCADE,related_name='homework_files')

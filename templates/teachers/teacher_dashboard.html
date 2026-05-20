@@ -1,0 +1,12 @@
+{% extends "teachers/base_teachers.html" %}
+{% block title %}Teacher Dashboard{% endblock title %}
+{% block content %}
+<h2>Sizning Guruhlaringiz:</h2><br>
+{% for group in groups  %}
+<h3>Guruh nomi: <a href="{% url 'teacher_group_detail' group.group.pk %}">{{ group.group.name }}</a></h3>
+<h3>Kursi nomi: {{ group.group.course.title }}</h3>
+<h3>Yo'nalish nomi: {{ group.group.course.category.title }}</h3>
+<h3>Boshlangan vaqti: {{ group.group.started_at }}</h3>
+<h3>Akamediklar: {{ group.group.group_teachers.count }}</h3>
+{% endfor %}
+{% endblock content %}

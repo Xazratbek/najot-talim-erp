@@ -1,0 +1,34 @@
+{% extends "teachers/base_teachers.html" %}
+{% block title %}Teacher Group detail{% endblock title %}
+{% block content %}
+<h2>Guruh nomi </h2><br>
+<h2>{{ guruh.name }}</h2>
+<h2>Guruh talabalari: </h2><br>
+{% for student in students %}
+    {{ student.get_full_name }}
+{% endfor %}
+<h2>Uyga vazifa va dars nomlari: </h2><br>
+{% comment %} {% for dars in guruh_darslari %}
+    {% for homework in dars.homeworks.all %}
+        <h3>Dars: {{dars.lesson.title}} | Berilgan sanasi: {{dars.lesson.lesson_date}} | Uyga vazifa berilgan sana: {{homework.created_at}} | Tugash vaqti: {{homework.deadline}}</h3>
+    {% endfor %}
+{% endfor %} {% endcomment %}
+
+<br>
+<br>
+<br>
+<br>
+{% for data in guruh_uyga_vazifalari %}
+    <h2>{{ data.homework.id }}</h2>
+    <h2>Mavzu: {{ data.dars }}</h2>
+    <h2>Dars sanasi: {{data.dars_sanasi }}</h2>
+    <h2>Homework description: {{ data.homework.description }}</h2>
+    <h2>Student id: {{ data.homework.student.id }}</h2>
+    <h3>
+        Topshirganlar: {{ data.homework.get_submission_stats.topshirganlar }}<br>
+        Topshirmaganlar: {{ data.homework.get_submission_stats.topshirmaganlar }}<br>
+        Tekshirilganlar: {{ data.homework.get_submission_stats.tekshirilganlar }}<br>
+    </h3>
+{% endfor %}
+{% endblock content %}
+<h3>{{ group }}</h3>

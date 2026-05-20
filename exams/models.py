@@ -2,7 +2,7 @@ from django.db import models
 from common.models import TimeStampedModel
 from groups.models import Group
 from users.models import User
-
+from django.core.validators import MinValueValidator, MaxValueValidator
 class Exam(TimeStampedModel):
     group = models.ForeignKey(
         Group,
@@ -50,6 +50,8 @@ class ExamSubmission(TimeStampedModel):
         null=True,
         blank=True
     )
+    score = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(100)])
+
     class Meta:
         db_table = 'exam_submissions'
         verbose_name = "Imtihon topshirig'i"

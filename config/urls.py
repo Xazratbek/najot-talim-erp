@@ -22,6 +22,7 @@ urlpatterns = [
     path('payments/',include('payments.urls')),
     path('shops/',include('shop.urls')),
     path('student/',include('students.urls')),
+    path('teacher/',include('teachers.urls')),
 ]
 
 if settings.DEBUG:

@@ -13,7 +13,7 @@ def redirect_after_login(user):
         return reverse("student-dashboard")
 
     if user.role in (Roles.TEACHER, Roles.SUPPORT_TEACHER):
-        return "/admin/"
+        return reverse('teacher-dashboard')
 
     if user.is_staff or user.is_superuser:
         return "/admin/"

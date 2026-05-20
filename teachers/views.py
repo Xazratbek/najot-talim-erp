@@ -5,16 +5,20 @@ from users.models import Roles
 from groups.models import GroupTeacher, Group, GroupLesson, GroupStudent
 from lessons.forms import LessonForm
 from notifications.models import Notification,NotificationTypes
-
-
+from django.db.models import Prefetch, Q
+from users.models import User
 
 class TeacherRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
     def test_func(self):
         return (
             self.request.user.is_authenticated
-            and self.request.user.role == Roles.TEACHER
+            and self.request.user.role == Roles.TEACHER or self.request.user.role == Roles.SUPPORT_TEACHER
         )
-    
+
+class TeacherDashboardView(TeacherRequiredMixin,View):
+    def get(self, request):
+        groups = GroupTeacher.objects.filter(teacher=request.user)
+        return render(request,'teachers/teacher_dashboard.html',context={'groups':groups})
 
 class TeacherCollectingGroupListView(TeacherRequiredMixin, View):
     def get(self, request):
@@ -22,7 +26,6 @@ class TeacherCollectingGroupListView(TeacherRequiredMixin, View):
         groups = GroupTeacher.objects.filter(teacher=teacher,group__is_opened=False).select_related('group')
 
         return render(request,'teachers/collecting_groups.html',context={"groups":groups})
-    
 
 class TeacherGroupListView(TeacherRequiredMixin, View):
     def get(self, request):
@@ -30,50 +33,32 @@ class TeacherGroupListView(TeacherRequiredMixin, View):
         groups = GroupTeacher.objects.filter(teacher=teacher,group__is_opened=True).select_related('group')
 
         return render(request,'teachers/teacher_groups.html',context={"groups":groups})
-    
 
 class TeacherGroupDetailView(TeacherRequiredMixin, View):
     def get(self, request, pk):
+        guruh = GroupTeacher.objects.filter(teacher=request.user,group__id=pk).first().group
+        students = []
+        for student in guruh.students.select_related('student'):
+            students.append(student.student)
 
-        teacher_groups = request.user.group_teachers.all() 
+        guruh_darslari_vazifalari = []
+        guruh_uyga_vazifalari = []
+        for dars in guruh.group_lessons.all():
+            for homework in dars.homeworks.all():
+                data = {
+                    "dars":dars.lesson.title,
+                    'dars_sanasi': dars.lesson.lesson_date,
+                    "deadline":homework.deadline,
+                    "uyga_vazifa_berilgan_sana": homework.created_at,
+                    "homework":homework,
+                }
+                guruh_uyga_vazifalari.append(data)
 
-        for gr in teacher_groups:
-            teacher_group = GroupTeacher.objects.filter(group = gr, teacher = request.user)
-
-
-
-        group = Group.objects.prefetch_related("teachers", "students", "group_lessons").filter(pk = pk, teacher = request.user)
-        if group:
-            context = {
-                "group":group,
-                "group_teachers":group.teachers.all(),
-                "group_students":group.students.all(), 
-                "group_lessons":group.group_lessons.all()
-            }
-            return render(request, "teachers/teacher_group_detail.html", context=context)
-
+        return render(request,'teachers/teacher_group_detail.html',context={"guruh":guruh,"students":students,"guruh_darslari":guruh_darslari_vazifalari,"guruh_uyga_vazifalari":guruh_uyga_vazifalari})
 
 class TeacherLessonCreateView(TeacherRequiredMixin, View):
     def get(self, request):
             pass
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 class TeacherLessonCreateView(LoginRequiredMixin, UserPassesTestMixin, View):
     def test_func(self):

@@ -10,11 +10,15 @@ class HomeworkSubmissionFilesInline(admin.TabularInline):
     model = HomeworkSubmissionFiles
     extra = 3
 
+class HomeworkSubmissionsInline(admin.TabularInline):
+    model = HomeworkSubmission
+    extra = 0
+
 
 @admin.register(Homework)
 class HomeworkAdmin(admin.ModelAdmin):
-    inlines = [HomeworkFilesInline]
-    list_display = ('id', 'group_lesson', 'deadline', 'created_at')
+    inlines = [HomeworkFilesInline,HomeworkSubmissionsInline]
+    list_display = ('id', 'group_lesson', 'description','deadline', 'created_at')
     ordering = ['-id']
     list_select_related = ['group_lesson',]
 
