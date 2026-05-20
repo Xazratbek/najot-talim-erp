@@ -14,6 +14,7 @@ class XP(models.Model):
         related_name='xps'
     )
     amount = models.IntegerField()
+    kumushlar = models.IntegerField()
     reason = models.CharField(max_length=40,choices=XPReasonChoices.choices)
 
     class Meta:
