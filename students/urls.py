@@ -8,6 +8,7 @@ from .views import (
     StudentIndicatorsView,
     StudentLessonDetailView,
     StudentPasswordChangeView,
+    StudentRateLessonView,
     StudentPaymentsView,
     StudentRankingView,
     StudentSettingsView,
@@ -25,6 +26,7 @@ urlpatterns = [
         StudentLessonDetailView.as_view(),
         name="student-lesson-detail",
     ),
+    path("lessons/rate/", StudentRateLessonView.as_view(), name="student-rate-lesson"),
     path("indicators/", StudentIndicatorsView.as_view(), name="student-indicators"),
     path(
         "indicators/<str:reason>/",

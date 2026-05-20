@@ -5,6 +5,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.views import PasswordChangeView
 from django.core.paginator import Paginator
 from django.db.models import Q, Sum
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
@@ -13,6 +14,7 @@ from exams.models import Exam
 from gamification.models import Rating, XP, XPReasonChoices
 from groups.models import Group, GroupLesson, GroupStudent
 from homeworks.models import *
+from lessons.models import Lesson, LessonRating
 from notifications.models import NotificationPreference
 from payments.models import Payment
 from shop.models import Category, Order, Product
@@ -287,6 +289,10 @@ class StudentLessonDetailView(StudentRequiredMixin, View):
             ):
                 can_submit = True
 
+        already_rated = LessonRating.objects.filter(
+            lesson=group_lesson.lesson, rated_by=student
+        ).exists()
+
         return render(
             request,
             self.template_name,
@@ -298,6 +304,7 @@ class StudentLessonDetailView(StudentRequiredMixin, View):
                 "submission_files": submission_files,
                 "description": description,
                 "can_submit": can_submit,
+                "already_rated": already_rated,
                 "side_lessons": GroupLesson.objects.filter(group=group_lesson.group)
                 .select_related("lesson")
                 .order_by("-lesson__lesson_date"),
@@ -340,6 +347,31 @@ class StudentLessonDetailView(StudentRequiredMixin, View):
 
         messages.success(request, "Uyga vazifa yuborildi.")
         return redirect("student-lesson-detail", pk=pk)
+
+
+class StudentRateLessonView(StudentRequiredMixin, View):
+    def post(self, request):
+        student = request.user
+        lesson_id = request.POST.get("lesson_id")
+        star = request.POST.get("star")
+        description = (request.POST.get("description") or "").strip()
+
+        lesson = Lesson.objects.filter(id=lesson_id).first()
+        if lesson_id and lesson:
+            rate_exists = LessonRating.objects.filter(lesson=lesson, rated_by=student).exists()
+            if rate_exists:
+                messages.info(request, "Siz oldin bu darsga baxo bergansiz")
+                return JsonResponse({"message": "Siz oldin bu darsga baxo bergansiz", "status": 400})
+
+            LessonRating.objects.create(
+                lesson=lesson,
+                rated_by=student,
+                star=star,
+                description=description,
+            )
+            return JsonResponse({"message": f"{lesson.title}-darsi baholandi", "status": 201})
+
+        return JsonResponse({"message": "Dars topilmadi", "status": 404})
 
 
 class StudentIndicatorsView(StudentRequiredMixin, View):

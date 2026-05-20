@@ -1,6 +1,51 @@
 {% extends "students/base_student.html" %}
 {% block title %}{{ group_lesson.lesson.title }}{% endblock %}
 {% block content %}
+<div id="rate-toast" class="card" style="display:none;margin-bottom:1rem;"></div>
+{% if not already_rated %}
+<div class="card" style="max-width:640px; margin: 0 auto;">
+  <h3>Darsni baholang</h3>
+  <p class="muted">Dars detail sahifasiga kirishdan oldin baholashni to'ldiring.</p>
+  <form id="lesson-rate-form">
+    {% csrf_token %}
+    <input type="hidden" name="lesson_id" value="{{ group_lesson.lesson_id }}">
+    <p><strong>Baho (1-5):</strong></p>
+    <div style="display:flex;gap:0.6rem;align-items:center;margin-bottom:1rem;">
+      {% for i in "12345" %}
+      <label style="cursor:pointer;">
+        <input type="radio" name="star" value="{{ i }}" {% if forloop.first %}checked{% endif %}> ⭐ {{ i }}
+      </label>
+      {% endfor %}
+    </div>
+    <p><label for="rate-description"><strong>Izoh (majburiy emas)</strong></label></p>
+    <textarea id="rate-description" name="description" rows="4" placeholder="Dars bo'yicha fikringiz..."></textarea>
+    <button type="submit" class="btn btn-green" style="margin-top:1rem;">Baholash va davom etish</button>
+  </form>
+</div>
+<script>
+(function(){
+  const form = document.getElementById('lesson-rate-form');
+  const toast = document.getElementById('rate-toast');
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    const formData = new FormData(form);
+    const response = await fetch("{% url 'student-rate-lesson' %}", {
+      method: 'POST',
+      headers: { 'X-CSRFToken': formData.get('csrfmiddlewaretoken') },
+      body: formData
+    });
+    const data = await response.json();
+    toast.style.display = 'block';
+    toast.innerHTML = data.message || "Xatolik yuz berdi";
+    toast.style.borderLeft = data.status === 201 ? '4px solid #10b981' : '4px solid #f59e0b';
+
+    if (data.status === 201) {
+      setTimeout(() => { window.location.reload(); }, 700);
+    }
+  });
+})();
+</script>
+{% else %}
 <div class="lesson-layout">
   <div>
     <p><a href="{% url 'student-group-detail' group_lesson.group_id %}" class="muted">← {{ group_lesson.group.name }}</a></p>
@@ -101,4 +146,5 @@
     {% endfor %}
   </aside>
 </div>
+{% endif %}
 {% endblock %}
