@@ -24,3 +24,15 @@ class XP(models.Model):
 
     def __str__(self):
         return f"{self.student} - {self.amount}"
+
+class Rating(models.Model):
+    student = models.ForeignKey(User,on_delete=models.CASCADE,related_name='rating')
+    level = models.IntegerField(default=1)
+
+    class Meta:
+        db_table = "student_rating"
+        verbose_name = "Ko'rsatgich"
+        verbose_name_plural = "Ko'rsatgichlar"
+
+    def __str__(self):
+        return f"{self.student.get_full_name()} bosqichi: {self.level}"

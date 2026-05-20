@@ -18,8 +18,10 @@ urlpatterns = [
     path('exams/',include('exams.urls')),
     path('payments/',include('payments.urls')),
     path('shops/',include('shop.urls')),
-] + debug_toolbar_urls()
+    path('student/',include('students.urls')),
+]
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])
+    urlpatterns += debug_toolbar_urls()

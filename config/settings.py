@@ -6,7 +6,7 @@ env = environ.Env(
     DEBUG=(bool, False)
 )
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'storages',
     "debug_toolbar",
+    'django_extensions',
 ]
 
 INTERNAL_IPS = [
@@ -69,7 +70,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [f"{BASE_DIR+'templates/'}"],
+        'DIRS': [str(BASE_DIR.joinpath('templates'))],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -130,16 +131,16 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [
-    BASE_DIR+"/static/",
+    BASE_DIR / "static/",
 ]
 
-LOGIN_REDIRECT_URL = 'listing:list'
-LOGOUT_REDIRECT_URL = 'listing:list'
+LOGIN_REDIRECT_URL = 'student-dashboard'
+LOGOUT_REDIRECT_URL = 'login'
 
 AUTH_USER_MODEL = 'users.User'
 
 MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR+"/media/"
+MEDIA_ROOT = BASE_DIR / "media/"
 
 
 SUPABASE_PROJECT_ID = env('SUPABASE_PROJECT_ID')

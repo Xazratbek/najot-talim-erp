@@ -9,6 +9,11 @@ class PaymentTypeChoices(models.TextChoices):
     CARD = "card", "Karta"
     OTHER = "other", "Boshqa"
 
+class PaymentStatusChoices(models.TextChoices):
+    PAID = "paid", "To'langan"
+    UNPAID = "unpaid","To'lanmagan"
+    UNCONFIRMED = "unconfirmed","Tasdiqlanmagan"
+
 class Payment(TimeStampedModel):
     student = models.ForeignKey(
         User,
@@ -22,6 +27,7 @@ class Payment(TimeStampedModel):
     )
     payment_type = models.CharField(max_length=25,choices=PaymentTypeChoices.choices,db_index=True)
     paid_at = models.DateTimeField(db_index=True)
+    status = models.CharField(max_length=25,choices=PaymentTypeChoices.choices,default=PaymentStatusChoices.PAID)
 
     class Meta:
         db_table = "payments"

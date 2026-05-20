@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Student panel{% endblock title %}
+{% block content %}
+
+<h2>Sizning kumushlaringiz: {% if total_amount_xp %} {{ total_amount_xp }} {% else %}Sizda kumushlar mavjud emas{% endif %}</h2>
+<h2>Bosqich: {% if rating.level %} {{ rating.level }} {% else %} Sizning ratingingiz mavjud emas {% endif %}</h2>
+{% endblock content %}

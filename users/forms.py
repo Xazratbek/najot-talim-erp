@@ -118,3 +118,8 @@ class AdminStudentCreateForm(forms.ModelForm):
             'role',
             'gender'
         ]
+
+
+class LoginForm(forms.Form):
+    login = forms.CharField(max_length=15,required=True)
+    password = forms.CharField(max_length=15,required=False)
