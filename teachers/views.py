@@ -1,79 +1,131 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.db.models import Count, Q
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 from django.views import View
-from django.contrib.auth.mixins import LoginRequiredMixin,UserPassesTestMixin
+
+from exams.models import Exam
+from groups.models import Group, GroupLesson
+from homeworks.models import HomeWorkStatusChoices, Homework, HomeworkSubmission
 from users.models import Roles
-from groups.models import GroupTeacher, Group, GroupLesson, GroupStudent
-from lessons.forms import LessonForm
-from notifications.models import Notification,NotificationTypes
-from django.db.models import Prefetch, Q
-from users.models import User
+
 
 class TeacherRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
     def test_func(self):
-        return (
-            self.request.user.is_authenticated
-            and self.request.user.role == Roles.TEACHER or self.request.user.role == Roles.SUPPORT_TEACHER
-        )
+        return self.request.user.is_authenticated and self.request.user.role in [Roles.TEACHER, Roles.SUPPORT_TEACHER]
 
-class TeacherDashboardView(TeacherRequiredMixin,View):
+
+class TeacherDashboardView(TeacherRequiredMixin, View):
     def get(self, request):
-        groups = GroupTeacher.objects.filter(teacher=request.user)
-        return render(request,'teachers/teacher_dashboard.html',context={'groups':groups})
+        return redirect("teacher-groups")
 
-class TeacherCollectingGroupListView(TeacherRequiredMixin, View):
-    def get(self, request):
-        teacher = request.user
-        groups = GroupTeacher.objects.filter(teacher=teacher,group__is_opened=False).select_related('group')
-
-        return render(request,'teachers/collecting_groups.html',context={"groups":groups})
 
 class TeacherGroupListView(TeacherRequiredMixin, View):
-    def get(self, request):
-        teacher = request.user
-        groups = GroupTeacher.objects.filter(teacher=teacher,group__is_opened=True).select_related('group')
+    template_name = "teachers/teacher_groups.html"
 
-        return render(request,'teachers/teacher_groups.html',context={"groups":groups})
+    def get(self, request):
+        groups = (
+            Group.objects.filter(teachers__teacher=request.user, is_opened=True)
+            .select_related("course", "branch")
+            .prefetch_related("teachers__teacher")
+            .distinct()
+        )
+        return render(request, self.template_name, {"groups": groups})
+
+
+class TeacherCollectingGroupListView(TeacherRequiredMixin, View):
+    template_name = "teachers/collecting_groups.html"
+
+    def get(self, request):
+        groups = (
+            Group.objects.filter(teachers__teacher=request.user, is_opened=False)
+            .select_related("course", "branch")
+            .prefetch_related("teachers__teacher")
+            .distinct()
+        )
+        return render(request, self.template_name, {"groups": groups})
+
+
+class TeacherProfileView(TeacherRequiredMixin, View):
+    def get(self, request):
+        return render(request, "teachers/profile.html")
+
 
 class TeacherGroupDetailView(TeacherRequiredMixin, View):
+    template_name = "teachers/teacher_group_detail.html"
+
+    def get_group(self, request, pk):
+        return get_object_or_404(
+            Group.objects.filter(teachers__teacher=request.user)
+            .select_related("course", "branch")
+            .prefetch_related("teachers__teacher", "students__student"),
+            pk=pk,
+        )
+
+    def post(self, request, pk):
+        group = self.get_group(request, pk)
+        if request.POST.get("action") == "review_submission":
+            sub = get_object_or_404(
+                HomeworkSubmission,
+                pk=request.POST.get("submission_id"),
+                homework__group_lesson__group=group,
+            )
+            sub.status = request.POST.get("status", HomeWorkStatusChoices.WAITING)
+            sub.teacher_comment = request.POST.get("teacher_comment", "")
+            sub.checked_by = request.user
+            sub.checked_at = timezone.now()
+            sub.allow_resubmission = request.POST.get("allow_resubmission") == "on"
+            sub.save()
+        return redirect(f"{request.path}?tab=materials&material_tab=lessons&lesson={request.POST.get('lesson_id', '')}")
+
     def get(self, request, pk):
-        guruh = GroupTeacher.objects.filter(teacher=request.user,group__id=pk).first().group
-        students = []
-        for student in guruh.students.select_related('student'):
-            students.append(student.student)
+        group = self.get_group(request, pk)
+        tab = request.GET.get("tab", "info")
+        material_tab = request.GET.get("material_tab", "lessons")
 
-        guruh_darslari_vazifalari = []
-        guruh_uyga_vazifalari = []
-        for dars in guruh.group_lessons.all():
-            for homework in dars.homeworks.all():
-                data = {
-                    "dars":dars.lesson.title,
-                    'dars_sanasi': dars.lesson.lesson_date,
-                    "deadline":homework.deadline,
-                    "uyga_vazifa_berilgan_sana": homework.created_at,
-                    "homework":homework,
-                }
-                guruh_uyga_vazifalari.append(data)
+        lessons = (
+            GroupLesson.objects.filter(group=group)
+            .select_related("lesson")
+            .prefetch_related("homeworks__submissions__student")
+            .order_by("-lesson__lesson_date")
+        )
+        selected_lesson = None
+        lesson_id = request.GET.get("lesson")
+        if lesson_id:
+            selected_lesson = lessons.filter(pk=lesson_id).first()
+        if not selected_lesson and lessons:
+            selected_lesson = lessons.first()
 
-        return render(request,'teachers/teacher_group_detail.html',context={"guruh":guruh,"students":students,"guruh_darslari":guruh_darslari_vazifalari,"guruh_uyga_vazifalari":guruh_uyga_vazifalari})
+        lesson_homework = Homework.objects.filter(group_lesson=selected_lesson).first() if selected_lesson else None
+        submissions = []
+        submission_stats = {"topshirgan": 0, "topshirmagan": 0, "tekshirilmagan": 0}
+        if lesson_homework:
+            submissions = list(
+                HomeworkSubmission.objects.filter(homework=lesson_homework)
+                .select_related("student", "checked_by")
+                .order_by("student__first_name", "student__last_name")
+            )
+            agg = HomeworkSubmission.objects.filter(homework=lesson_homework).aggregate(
+                topshirgan=Count("id", filter=~Q(status=HomeWorkStatusChoices.NOT_SUBMITTED)),
+                topshirmagan=Count("id", filter=Q(status=HomeWorkStatusChoices.NOT_SUBMITTED)),
+                tekshirilmagan=Count("id", filter=Q(checked_at__isnull=True) & ~Q(status=HomeWorkStatusChoices.NOT_SUBMITTED)),
+            )
+            submission_stats = {k: (v or 0) for k, v in agg.items()}
 
-class TeacherLessonCreateView(TeacherRequiredMixin, View):
-    def get(self, request):
-            pass
+        exams = Exam.objects.filter(group=group).order_by("-started_at")
 
-class TeacherLessonCreateView(LoginRequiredMixin, UserPassesTestMixin, View):
-    def test_func(self):
-        return self.request.user.is_authenticated and self.request.user.role == Roles.TEACHER
-
-    def get(self, request):
-        form = LessonForm()
-        return render(request,"teachers/lesson_create.html",context={'form':form})
-
-    def post(self, request):
-        form = LessonForm(data=request.POST)
-        if form.is_valid():
-            lesson = form.save()
-            notifications = []
-            for student in lesson.lesson_group.group.students.all():
-                notifications.append(Notification(receiver=student.student,type=NotificationTypes.NEW_LESSON,title=f"{student.student.get_full_name()}-Yangi dars boshlandi"))
-            Notification.objects.bulk_create(notifications)
-            return redirect('teacher-groups')
+        return render(
+            request,
+            self.template_name,
+            {
+                "guruh": group,
+                "tab": tab,
+                "material_tab": material_tab,
+                "lessons": lessons,
+                "selected_lesson": selected_lesson,
+                "lesson_homework": lesson_homework,
+                "submissions": submissions,
+                "submission_stats": submission_stats,
+                "exams": exams,
+            },
+        )
