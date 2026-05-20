@@ -140,8 +140,8 @@
     <h3>Darslar</h3>
     {% for gl in side_lessons %}
     <a href="{% url 'student-lesson-detail' gl.pk %}" class="lesson-side-item {% if gl.pk == group_lesson.pk %}active{% endif %}">
-      <strong>{{ gl.lesson.title }}</strong>
-      <p class="muted">Dars sanasi: {{ gl.lesson.lesson_date|date:"d M, Y" }}</p>
+      <strong class="lesson-side-title">{{ gl.lesson.title }}</strong>
+      <p class="lesson-side-date">Dars sanasi: {{ gl.lesson.lesson_date|date:"d M, Y" }}</p>
     </a>
     {% endfor %}
   </aside>
