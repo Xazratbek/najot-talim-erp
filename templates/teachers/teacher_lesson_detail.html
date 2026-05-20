@@ -1,0 +1,32 @@
+{% extends "teachers/base_teachers.html" %}
+{% block content %}
+<p><a href="{% url 'teacher_group_detail' guruh.id %}?tab=materials">← Darslar ro'yxati</a></p>
+<h2>{{ lesson.lesson.title }}</h2>
+{% if homework %}
+<div class="card">
+  <h3>Uyga vazifa</h3>
+  <p>{{ homework.description }}</p>
+  <p>Deadline: {{ homework.deadline|date:'d.m.Y H:i' }}</p>
+</div>
+<div class="card">
+  <h3>Topshirganlar</h3>
+  <table><thead><tr><th>Student</th><th>Status</th><th>Fayllar</th><th>Action</th></tr></thead><tbody>
+    {% for submission in submissions %}
+    <tr>
+      <td>{{ submission.student.get_full_name|default:submission.student.username }}</td>
+      <td>{{ submission.get_status_display }}</td>
+      <td>{% for f in submission.homeworksubmission_files.all %}<a href="{{ f.file.url }}" target="_blank">📎 Fayl</a><br>{% empty %}-{% endfor %}</td>
+      <td>
+        <form method="post">{% csrf_token %}
+          <input type="hidden" name="action" value="review_submission"><input type="hidden" name="submission_id" value="{{ submission.id }}">
+          <button name="status" value="approved">✅ Qabul</button>
+          <button name="status" value="rejected">❌ Reject</button>
+          <input type="text" name="teacher_comment" placeholder="Izoh">
+        </form>
+      </td>
+    </tr>
+    {% empty %}<tr><td colspan="4">Submission yo'q</td></tr>{% endfor %}
+  </tbody></table>
+</div>
+{% else %}<p>Bu dars uchun uyga vazifa mavjud emas.</p>{% endif %}
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "teachers/base_teachers.html" %}
+{% block content %}
+<p><a href="{% url 'teacher_group_detail' guruh.id %}">← Guruh</a></p>
+<h2>{{ guruh.name }} - Yo'qlama</h2>
+<form method="post" class="card">{% csrf_token %}
+<label>Bugungi dars</label>
+<select name="lesson_id">{% for l in lessons %}<option value="{{ l.id }}">{{ l.lesson.title }} ({{ l.lesson.lesson_date }})</option>{% endfor %}</select>
+<table><thead><tr><th>O'quvchi</th><th>Keldi/Kelmadi</th></tr></thead><tbody>
+{% for gs in guruh.students.all %}
+<tr><td>{{ gs.student.get_full_name|default:gs.student.username }}</td><td>
+<label><input type="radio" name="student_{{ gs.student_id }}" value="absent" checked> Chap (Kelmadi)</label>
+<label><input type="radio" name="student_{{ gs.student_id }}" value="present"> O'ng (Keldi)</label>
+</td></tr>
+{% endfor %}
+</tbody></table>
+<button type="submit">Saqlash</button>
+</form>
+{% endblock %}
