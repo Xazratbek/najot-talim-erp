@@ -1,59 +1,48 @@
 {% extends "teachers/base_teachers.html" %}
-
-{% block page_title %}{{ guruh.name }} | Group detail{% endblock page_title %}
-
 {% block content %}
-<section class="panel-head">
-    <h1>{{ guruh.name }}</h1>
-    <p class="muted">Guruh ichidagi talabalar va uyga vazifalar holati.</p>
-</section>
+<p><a href="{% url 'teacher-groups' %}">← Guruhlar</a></p>
+<h1>{{ guruh.name }}</h1>
+<div class="tabs">
+  <a class="tab {% if tab == 'info' %}active{% endif %}" href="?tab=info">Ma'lumotlar</a>
+  <a class="tab {% if tab == 'materials' %}active{% endif %}" href="?tab=materials">Guruh darsliklari</a>
+</div>
 
-<section class="panel">
-    <h2>Talabalar ({{ students|length }})</h2>
-    {% if students %}
-    <div class="student-list">
-        {% for student in students %}
-            <span class="student-chip">{{ student.get_full_name }}</span>
-        {% endfor %}
-    </div>
-    {% else %}
-    <p class="muted">Bu guruhda hali talaba mavjud emas.</p>
-    {% endif %}
-</section>
-
-<section class="panel">
-    <h2>Uyga vazifalar</h2>
-    {% if guruh_uyga_vazifalari %}
-    <div class="table-wrap">
-        <table>
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Mavzu</th>
-                    <th>Dars sanasi</th>
-                    <th>Tavsif</th>
-                    <th>Topshirgan</th>
-                    <th>Topshirmagan</th>
-                    <th>Tekshirilgan</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for data in guruh_uyga_vazifalari %}
-                <tr>
-                    <td>{{ data.homework.id }}</td>
-                    <td>{{ data.dars }}</td>
-                    <td>{{ data.dars_sanasi|date:"d M Y" }}</td>
-                    <td>{{ data.homework.description|truncatechars:70 }}</td>
-                    <td>{{ data.homework.get_submission_stats.topshirganlar }}</td>
-                    <td>{{ data.homework.get_submission_stats.topshirmaganlar }}</td>
-                    <td>{{ data.homework.get_submission_stats.tekshirilganlar }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    {% else %}
-    <p class="muted">Uyga vazifalar hali qo'shilmagan.</p>
-    {% endif %}
-</section>
-{% endblock content %}
+{% if tab == 'info' %}
+<div class="grid2">
+  <div class="card"><h3>Guruh mentorlari</h3>{% for gt in guruh.teachers.all %}<p>{{ gt.teacher.get_full_name|default:gt.teacher.username }}</p>{% endfor %}</div>
+  <div class="card"><h3>Parametrlar</h3><p>Filial: {{ guruh.branch.name }}</p><p>Kurs: {{ guruh.course.title }}</p><p>O'quvchilar soni: {{ guruh.students.count }}</p></div>
+</div>
+{% else %}
+<div class="tabs sub">
+  <a class="tab {% if material_tab == 'lessons' %}active{% endif %}" href="?tab=materials&material_tab=lessons">Darslar</a>
+  <a class="tab {% if material_tab == 'exams' %}active{% endif %}" href="?tab=materials&material_tab=exams">Imtihonlar</a>
+</div>
+{% if material_tab == 'lessons' %}
+<div class="grid2"><div class="card"><h3>Darslar</h3>
+{% for l in lessons %}<p><a href="?tab=materials&material_tab=lessons&lesson={{ l.pk }}">{{ l.lesson.title }}</a></p>{% empty %}<p>Dars yo'q.</p>{% endfor %}
+</div>
+<div class="card">
+{% if selected_lesson %}
+<h3>{{ selected_lesson.lesson.title }}</h3>
+{% if lesson_homework %}
+<p>{{ lesson_homework.description }}</p>
+<p><b>Topshirganlar:</b> {{ submission_stats.topshirgan }} | <b>Topshirmaganlar:</b> {{ submission_stats.topshirmagan }} | <b>Tekshirilmaganlar:</b> {{ submission_stats.tekshirilmagan }}</p>
+<table><thead><tr><th>Talaba</th><th>Status</th><th>Izoh</th><th>Action</th></tr></thead><tbody>
+{% for submission in submissions %}
+<tr><td>{{ submission.student.get_full_name|default:submission.student.username }}</td><td>{{ submission.get_status_display }}</td><td>{{ submission.teacher_comment|default:'-' }}</td><td>
+<form method="post">{% csrf_token %}
+<input type="hidden" name="action" value="review_submission"><input type="hidden" name="submission_id" value="{{ submission.id }}"><input type="hidden" name="lesson_id" value="{{ selected_lesson.pk }}">
+<select name="status"><option value="approved">Qabul qilingan</option><option value="rejected">Qaytarilgan</option><option value="waiting">Kutayotgan</option></select>
+<input name="teacher_comment" placeholder="Izoh"><label><input type="checkbox" name="allow_resubmission">Qayta topshirish</label>
+<button>Saqlash</button></form>
+</td></tr>
+{% endfor %}
+</tbody></table>
+{% else %}<p>Bu dars uchun uyga vazifa biriktirilmagan.</p>{% endif %}
+{% endif %}
+</div></div>
+{% else %}
+<div class="card"><h3>Imtihonlar</h3><table><thead><tr><th>Nomi</th><th>Boshlanish</th><th>Tugash</th></tr></thead><tbody>{% for e in exams %}<tr><td>{{ e.title }}</td><td>{{ e.started_at|date:'d.m.Y H:i' }}</td><td>{{ e.ended_at|date:'d.m.Y H:i' }}</td></tr>{% empty %}<tr><td colspan="3">Imtihonlar topilmadi</td></tr>{% endfor %}</tbody></table></div>
+{% endif %}
+{% endif %}
+{% endblock %}
