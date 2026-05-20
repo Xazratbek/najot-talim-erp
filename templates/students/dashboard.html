@@ -1,7 +1,29 @@
-{% extends "base.html" %}
-{% block title %}Student panel{% endblock title %}
+{% extends "students/base_student.html" %}
+{% block title %}Bosh sahifa{% endblock %}
 {% block content %}
-
-<h2>Sizning kumushlaringiz: {% if total_amount_xp %} {{ total_amount_xp }} {% else %}Sizda kumushlar mavjud emas{% endif %}</h2>
-<h2>Bosqich: {% if rating.level %} {{ rating.level }} {% else %} Sizning ratingingiz mavjud emas {% endif %}</h2>
-{% endblock content %}
+<h1>Kumushlar: <span class="stat-big">{{ total_kumush }}</span></h1>
+<div class="grid-2">
+  <div class="card">
+    <p>Bosqich: <strong>{{ level }}</strong></p>
+    <div class="progress-bar"><span style="width: {% widthratio total_xp next_level_xp 100 %}%"></span></div>
+    <p class="muted">{{ total_xp }} / {{ next_level_xp }}</p>
+    <p>XP: <strong>{{ total_xp }}</strong></p>
+    <hr style="border-color: var(--border); margin: 1rem 0;">
+    <h3>Reyting</h3>
+    <p>Umumiy: <strong>{{ overall_rank }}</strong> - o'rin</p>
+  </div>
+  <div class="card calendar-wrap">
+    <h3>Dars jadvali</h3>
+    <p class="muted">{{ calendar_month }}</p>
+    {% include "students/partials/calendar.html" with calendar_cells=calendar_cells %}
+    {% if upcoming_lessons %}
+    <h4 style="margin-top:1rem;">Yaqin darslar</h4>
+    <ul>
+      {% for gl in upcoming_lessons %}
+      <li><a href="{% url 'student-lesson-detail' gl.pk %}">{{ gl.lesson.title }}</a> — {{ gl.lesson.lesson_date|date:"d M, Y" }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

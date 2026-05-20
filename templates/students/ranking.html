@@ -1,0 +1,37 @@
+{% extends "students/base_student.html" %}
+{% block title %}Reyting{% endblock %}
+{% block content %}
+<h1>Reyting</h1>
+<form method="get" class="filter-row card">
+  <select name="scope">
+    <option value="group" {% if scope == 'group' %}selected{% endif %}>Guruhim bo'yicha</option>
+    <option value="branch" {% if scope == 'branch' %}selected{% endif %}>Filial bo'yicha</option>
+    <option value="all" {% if scope == 'all' %}selected{% endif %}>Barcha filiallar bo'yicha</option>
+  </select>
+  <select name="period">
+    <option value="week" {% if period == 'week' %}selected{% endif %}>Haftalik</option>
+    <option value="month" {% if period == 'month' %}selected{% endif %}>Oylik</option>
+    <option value="3month" {% if period == '3month' %}selected{% endif %}>3 oy</option>
+  </select>
+  <button type="submit" class="btn btn-primary">Ko'rsatish</button>
+</form>
+{% if my_rank %}
+<p>Sizning o'rningiz: <strong>{{ my_rank }}</strong></p>
+{% endif %}
+<div class="card">
+  <table class="data-table">
+    <thead><tr><th>#</th><th>O'quvchi</th><th>XP</th></tr></thead>
+    <tbody>
+      {% for u in rankings %}
+      <tr {% if u.id == request.user.id %}style="background:var(--accent-soft)"{% endif %}>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ u.get_full_name|default:u.username }}</td>
+        <td>{{ u.total_xp|default:0 }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="3" class="muted">Reyting bo'sh</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

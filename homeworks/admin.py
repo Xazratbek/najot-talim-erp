@@ -11,7 +11,10 @@ class HomeworkAdmin(admin.ModelAdmin):
 
 @admin.register(HomeworkSubmission)
 class HomeworkSubmissionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'homework', 'student', 'status', 'created_at')
-    list_filter = ('status',)
+    list_display = (
+        'id', 'homework', 'student', 'status',
+        'checked_by', 'checked_at', 'allow_resubmission', 'created_at',
+    )
+    list_filter = ('status', 'allow_resubmission')
     search_fields = ('student__username',)
     ordering = ['-id']

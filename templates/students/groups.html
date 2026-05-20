@@ -1,0 +1,40 @@
+{% extends "students/base_student.html" %}
+{% block title %}Guruhlarim{% endblock %}
+{% block content %}
+<h1>Guruhlarim</h1>
+<div class="tabs">
+  <a href="?tab=active" class="tab {% if tab == 'active' %}active{% endif %}">Faol guruhlar</a>
+  <a href="?tab=finished" class="tab {% if tab == 'finished' %}active{% endif %}">Tugagan guruhlar</a>
+</div>
+<div class="card">
+  <table class="data-table">
+    <thead>
+      <tr><th>#</th><th>Guruh nomi</th><th>Yo'nalishi</th><th>O'qituvchi</th><th>Boshlash vaqti</th></tr>
+    </thead>
+    <tbody>
+      {% for group in groups %}
+      <tr>
+        <td>{{ forloop.counter }}</td>
+        <td><a href="{% url 'student-group-detail' group.pk %}">{{ group.name }}</a></td>
+        <td>{{ group.course.category.title }}</td>
+        <td>
+          <div class="teachers-popover">
+            <button type="button" class="btn btn-ghost">O'qituvchilar</button>
+            <div class="popover-content">
+              {% for gt in group.teachers.all %}
+              <div>{{ gt.teacher.get_full_name|default:gt.teacher.username }}</div>
+              {% empty %}
+              <div class="muted">—</div>
+              {% endfor %}
+            </div>
+          </div>
+        </td>
+        <td>{{ group.started_at|date:"d M, Y" }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" class="muted">Guruhlar yo'q</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

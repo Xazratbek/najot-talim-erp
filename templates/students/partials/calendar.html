@@ -1,0 +1,10 @@
+<div class="calendar-grid">
+  <div class="muted">D</div><div class="muted">S</div><div class="muted">C</div><div class="muted">P</div><div class="muted">J</div><div class="muted">S</div><div class="muted">Y</div>
+  {% for cell in calendar_cells %}
+    {% if cell.empty %}
+    <div></div>
+    {% else %}
+    <div class="calendar-day{% if cell.has_lesson %} has-lesson{% endif %}{% if cell.is_today %} today{% endif %}">{{ cell.day }}</div>
+    {% endif %}
+  {% endfor %}
+</div>

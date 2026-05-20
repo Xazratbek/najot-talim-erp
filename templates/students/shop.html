@@ -1,0 +1,77 @@
+{% extends "students/base_student.html" %}
+{% block title %}Do'kon{% endblock %}
+{% block content %}
+<h1>Do'kon</h1>
+<div class="tabs">
+  <a href="?tab=sale" class="tab {% if tab == 'sale' %}active{% endif %}">Sotuvda</a>
+  <a href="?tab=purchases" class="tab {% if tab == 'purchases' %}active{% endif %}">Sotib olganlarim</a>
+</div>
+
+{% if tab == 'sale' %}
+<form method="get" class="filter-row card">
+  <div>
+    <label>Kategoriya</label>
+    <select name="category">
+      <option value="">Barchasi</option>
+      {% for c in categories %}
+      <option value="{{ c.id }}" {% if filters.category == c.id|stringformat:'s' %}selected{% endif %}>{{ c.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label>Dan</label>
+    <input type="number" name="price_from" min="0" value="{{ filters.price_from }}" placeholder="0">
+  </div>
+  <div>
+    <label>Gacha</label>
+    <input type="number" name="price_to" min="0" value="{{ filters.price_to }}" placeholder="0">
+  </div>
+  <div>
+    <label>Qidirish</label>
+    <input type="search" name="search" value="{{ filters.search }}" placeholder="Qidirish...">
+  </div>
+  <div>
+    <label><input type="checkbox" name="affordable_only" value="1" {% if filters.affordable_only %}checked{% endif %}> Kumushlarim yetadi</label>
+  </div>
+  <input type="hidden" name="tab" value="sale">
+  <button type="submit" class="btn btn-primary">Qidirish</button>
+</form>
+<div class="product-grid">
+  {% for product in products %}
+  <div class="card product-card">
+    {% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.title }}">{% endif %}
+    <h4>{{ product.title }}</h4>
+    <p class="stat-big" style="font-size:1.1rem;">{{ product.price }}</p>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="product_id" value="{{ product.id }}">
+      {% if request.user.balance >= product.price %}
+      <button type="submit" class="btn btn-green">Kumushingiz yetarli</button>
+      {% else %}
+      <button type="button" class="btn btn-ghost" disabled>Yetarli emas</button>
+      {% endif %}
+    </form>
+  </div>
+  {% empty %}
+  <p class="muted">Mahsulot topilmadi</p>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card">
+  <table class="data-table">
+    <thead><tr><th>#</th><th>Mahsulot</th><th>Narx</th></tr></thead>
+    <tbody>
+      {% for order in purchases %}
+      <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ order.product.title }}</td>
+        <td>{{ order.product.price }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="3" class="muted">Hali sotib olmadingiz</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}

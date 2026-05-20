@@ -1,0 +1,26 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Xodim ro'yxati | Najot Ta'lim</title>
+  <link rel="stylesheet" href="{% static 'css/student.css' %}">
+</head>
+<body class="student-body">
+<div class="auth-page">
+  <div class="auth-card" style="max-width:480px;">
+    <h1>Xodim ro'yxatdan o'tish</h1>
+    {% if messages %}
+    <ul class="messages">{% for message in messages %}<li class="{{ message.tags }}">{{ message }}</li>{% endfor %}</ul>
+    {% endif %}
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="btn btn-primary" style="width:100%;">Ro'yxatdan o'tish</button>
+    </form>
+    <p style="margin-top:1rem;"><a href="{% url 'login' %}">Login sahifasiga qaytish</a></p>
+  </div>
+</div>
+</body>
+</html>

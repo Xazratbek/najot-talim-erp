@@ -1,0 +1,23 @@
+{% extends "students/base_student.html" %}
+{% block title %}{{ reason_label }}{% endblock %}
+{% block content %}
+<p><a href="{% url 'student-indicators' %}" class="muted">← Ko'rsatgichlarim</a></p>
+<h1>{{ reason_label }}</h1>
+<div class="card">
+  <table class="data-table">
+    <thead><tr><th>#</th><th>XP</th><th>Kumush</th><th>Sana</th></tr></thead>
+    <tbody>
+      {% for e in entries %}
+      <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ e.amount }}</td>
+        <td>{{ e.kumushlar }}</td>
+        <td>{{ e.created_at|date:"d M, Y H:i" }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4" class="muted">Ma'lumot yo'q</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

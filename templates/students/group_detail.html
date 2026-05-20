@@ -1,0 +1,60 @@
+{% extends "students/base_student.html" %}
+{% block title %}{{ group.name }}{% endblock %}
+{% block content %}
+<p><a href="{% url 'student-groups' %}" class="muted">← Guruhlarim</a></p>
+<h1>{{ group.name }}</h1>
+<p class="muted">{{ group.course.title }}</p>
+<form method="get" class="filter-row">
+  <label>Uy vazifa statusi</label>
+  <select name="status" onchange="this.form.submit()">
+    <option value="">Barchasi</option>
+    <option value="approved" {% if status_filter == 'approved' %}selected{% endif %}>Qabul qilingan</option>
+    <option value="not_assigned" {% if status_filter == 'not_assigned' %}selected{% endif %}>Berilmagan</option>
+    <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Qaytarilgan</option>
+    <option value="not_submitted" {% if status_filter == 'not_submitted' %}selected{% endif %}>Bajarilmagan</option>
+    <option value="waiting" {% if status_filter == 'waiting' %}selected{% endif %}>Kutayotganlar</option>
+  </select>
+</form>
+<div class="card">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Mavzular</th>
+        <th>Video</th>
+        <th>Uyga vazifa Holati</th>
+        <th>Uyga vazifa tugash vaqti</th>
+        <th>Dars sanasi</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <td>
+          {% if row.type == 'lesson' %}
+          <a href="{% url 'student-lesson-detail' row.pk %}">{{ row.title }}</a>
+          {% else %}
+          {{ row.title }}
+          {% endif %}
+        </td>
+        <td>
+          {% if row.type == 'exam' %}
+          <span class="badge badge-gold">Imtihon</span>
+          {% elif row.video_count %}
+          <span class="badge badge-blue">{{ row.video_count }}</span>
+          {% else %}—{% endif %}
+        </td>
+        <td>
+          <span class="badge badge-{% if row.status_key == 'approved' %}green{% elif row.status_key == 'waiting' %}blue{% elif row.status_key == 'not_assigned' %}grey{% elif row.status_key == 'rejected' %}gold{% else %}red{% endif %}">
+            {{ row.status_label }}
+          </span>
+        </td>
+        <td>{% if row.deadline %}{{ row.deadline|date:"d M, Y H:i" }}{% else %}—{% endif %}</td>
+        <td>{{ row.lesson_date|date:"d M, Y" }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" class="muted">Darslar topilmadi</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -27,7 +27,12 @@ class Payment(TimeStampedModel):
     )
     payment_type = models.CharField(max_length=25,choices=PaymentTypeChoices.choices,db_index=True)
     paid_at = models.DateTimeField(db_index=True)
-    status = models.CharField(max_length=25,choices=PaymentTypeChoices.choices,default=PaymentStatusChoices.PAID)
+    status = models.CharField(
+        max_length=25,
+        choices=PaymentStatusChoices.choices,
+        default=PaymentStatusChoices.PAID,
+        db_index=True,
+    )
 
     class Meta:
         db_table = "payments"

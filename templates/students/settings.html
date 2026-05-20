@@ -1,0 +1,63 @@
+{% extends "students/base_student.html" %}
+{% block title %}Sozlamalar{% endblock %}
+{% block content %}
+<h1>Sozlamalar</h1>
+<div class="card" style="margin-bottom:1rem;">
+  <h3>Shaxsiy ma'lumotlar</h3>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="profile">
+    <div class="grid-2">
+      <div>
+        {% if student.avatar %}
+        <img src="{{ student.avatar.url }}" alt="avatar" style="width:120px;height:120px;border-radius:50%;object-fit:cover;">
+        {% endif %}
+        <p><label>Avatar</label><br><input type="file" name="avatar"></p>
+        <p class="muted">500x500, JPEG/PNG, maks 2MB</p>
+      </div>
+      <div>
+        <p><label>Ism</label><br><input type="text" name="first_name" value="{{ student.first_name }}" style="width:100%;"></p>
+        <p><label>Familiya</label><br><input type="text" name="last_name" value="{{ student.last_name }}" style="width:100%;"></p>
+        <p><label>Telefon</label><br><input type="text" name="phone" value="{{ student.phone }}" style="width:100%;"></p>
+        <p><label>Jinsi</label><br>
+          <select name="gender" style="width:100%;">
+            <option value="">—</option>
+            <option value="male" {% if student.gender == 'male' %}selected{% endif %}>Erkak</option>
+            <option value="female" {% if student.gender == 'female' %}selected{% endif %}>Ayol</option>
+          </select>
+        </p>
+        <p class="muted">HH ID: {{ student.username }}</p>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Saqlash</button>
+  </form>
+</div>
+<div class="grid-2">
+  <div class="card">
+    <h3>Parol</h3>
+    <p>••••••••</p>
+    <a href="{% url 'student-password-change' %}" class="btn btn-ghost">O'zgartirish</a>
+  </div>
+  <div class="card">
+    <h3>Bildirishnoma sozlamalari</h3>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="notifications">
+      <p><label><input type="checkbox" name="new_exam" {% if prefs.new_exam %}checked{% endif %}> Yangi imtihon</label></p>
+      <p><label><input type="checkbox" name="new_lesson" {% if prefs.new_lesson %}checked{% endif %}> Yangi dars</label></p>
+      <p><label><input type="checkbox" name="exam_announcement" {% if prefs.exam_announcement %}checked{% endif %}> Imtihon e'loni</label></p>
+      <p><label><input type="checkbox" name="xp_update" {% if prefs.xp_update %}checked{% endif %}> XP yangilanishi</label></p>
+      <p><label><input type="checkbox" name="exam_deadline_near" {% if prefs.exam_deadline_near %}checked{% endif %}> Imtihon muddati yaqin</label></p>
+      <p><label><input type="checkbox" name="homework_reviewed" {% if prefs.homework_reviewed %}checked{% endif %}> Uyga vazifa tekshirildi</label></p>
+      <p><label><input type="checkbox" name="added_to_group" {% if prefs.added_to_group %}checked{% endif %}> Guruhga qo'shilish</label></p>
+      <p><label><input type="checkbox" name="removed_from_group" {% if prefs.removed_from_group %}checked{% endif %}> Guruhdan chiqarilish</label></p>
+      <p><label><input type="checkbox" name="silver_rewarded" {% if prefs.silver_rewarded %}checked{% endif %}> XP/Kumush berilganda</label></p>
+      <button type="submit" class="btn btn-primary">Saqlash</button>
+    </form>
+  </div>
+</div>
+<div class="card" style="margin-top:1rem;">
+  <h3>Shartnomalarim</h3>
+  <p class="muted">Hozircha shartnomalar mavjud emas.</p>
+</div>
+{% endblock %}

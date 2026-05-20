@@ -134,6 +134,7 @@ STATICFILES_DIRS = [
     BASE_DIR / "static/",
 ]
 
+LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'student-dashboard'
 LOGOUT_REDIRECT_URL = 'login'
 

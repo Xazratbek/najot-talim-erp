@@ -40,7 +40,7 @@ class Group(TimeStampedModel):
         return self.name
 
 
-class GroupTeacher(models.Model):
+class GroupTeacher(TimeStampedModel):
     group = models.ForeignKey(
         Group,
         on_delete=models.CASCADE,

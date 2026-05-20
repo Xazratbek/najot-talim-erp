@@ -50,7 +50,22 @@ class HomeworkSubmission(TimeStampedModel):
     description = models.TextField(
         blank=True
     )
-    status = models.CharField(max_length=25,choices=HomeWorkStatusChoices.choices,default=HomeWorkStatusChoices.NOT_SUBMITTED,db_index=True)
+    status = models.CharField(
+        max_length=25,
+        choices=HomeWorkStatusChoices.choices,
+        default=HomeWorkStatusChoices.NOT_SUBMITTED,
+        db_index=True,
+    )
+    teacher_comment = models.TextField(blank=True, verbose_name="O'qituvchi izohi")
+    checked_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="checked_homework_submissions",
+    )
+    checked_at = models.DateTimeField(null=True, blank=True)
+    allow_resubmission = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'homework_submissions'

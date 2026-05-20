@@ -43,3 +43,28 @@ class Notification(TimeStampedModel):
 
     def __str__(self):
         return f"{self.receiver} - {self.title}"
+
+
+class NotificationPreference(TimeStampedModel):
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="notification_preference",
+    )
+    new_exam = models.BooleanField(default=True)
+    new_lesson = models.BooleanField(default=True)
+    exam_announcement = models.BooleanField(default=True)
+    xp_update = models.BooleanField(default=True)
+    exam_deadline_near = models.BooleanField(default=True)
+    homework_reviewed = models.BooleanField(default=True)
+    added_to_group = models.BooleanField(default=True)
+    removed_from_group = models.BooleanField(default=True)
+    silver_rewarded = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = "notification_preferences"
+        verbose_name = "Bildirishnoma sozlamasi"
+        verbose_name_plural = "Bildirishnoma sozlamalari"
+
+    def __str__(self):
+        return f"{self.user.username} sozlamalari"

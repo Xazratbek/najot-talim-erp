@@ -1,0 +1,53 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Student panel{% endblock %} | Najot Ta'lim</title>
+  <link rel="stylesheet" href="{% static 'css/student.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="student-body">
+<div class="student-layout">
+  <aside class="student-sidebar">
+    <div class="brand">
+      <span>NAJOT TA'LIM</span>
+      <span class="beta">Beta</span>
+    </div>
+    <nav>
+      <a href="{% url 'student-dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'student-dashboard' or request.resolver_match.url_name == 'student-dashboard-alt' %}active{% endif %}">Bosh sahifa</a>
+      <a href="{% url 'student-payments' %}" class="nav-item {% if request.resolver_match.url_name == 'student-payments' %}active{% endif %}">To'lovlarim</a>
+      <a href="{% url 'student-groups' %}" class="nav-item {% if 'group' in request.resolver_match.url_name or 'lesson' in request.resolver_match.url_name %}active{% endif %}">Guruhlarim</a>
+      <a href="{% url 'student-indicators' %}" class="nav-item {% if 'indicators' in request.resolver_match.url_name %}active{% endif %}">Ko'rsatgichlarim</a>
+      <a href="{% url 'student-ranking' %}" class="nav-item {% if request.resolver_match.url_name == 'student-ranking' %}active{% endif %}">Reyting</a>
+      <a href="{% url 'student-shop' %}" class="nav-item {% if request.resolver_match.url_name == 'student-shop' %}active{% endif %}">Do'kon</a>
+      <a href="{% url 'student-settings' %}" class="nav-item {% if request.resolver_match.url_name == 'student-settings' or request.resolver_match.url_name == 'student-password-change' %}active{% endif %}">Sozlamalar</a>
+    </nav>
+  </aside>
+  <div class="student-main">
+    <header class="student-topbar">
+      <span class="muted">Student panel</span>
+      <div class="topbar-actions">
+        <span class="muted">Kumush: {{ sidebar_kumush|default:0 }}</span>
+        <form action="{% url 'logout' %}" method="post">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-ghost">Chiqish</button>
+        </form>
+      </div>
+    </header>
+    <main class="student-content">
+      {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+        <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .forms import NotificationForm
-from .models import Notification
+from .models import Notification, NotificationPreference
 
 
 @admin.register(Notification)
@@ -12,3 +12,9 @@ class NotificationAdmin(admin.ModelAdmin):
     search_fields = ('title', 'receiver__username', 'receiver__first_name', 'receiver__last_name')
     autocomplete_fields = ('receiver',)
     readonly_fields = ('created_at', 'updated_at')
+
+
+@admin.register(NotificationPreference)
+class NotificationPreferenceAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'new_exam', 'homework_reviewed', 'updated_at')
+    search_fields = ('user__username',)

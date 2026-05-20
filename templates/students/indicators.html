@@ -1,0 +1,34 @@
+{% extends "students/base_student.html" %}
+{% block title %}Ko'rsatgichlarim{% endblock %}
+{% block content %}
+<h1>Mening natijalarim</h1>
+<div class="grid-2">
+  <div class="card">
+    <p>Kumushlar: <span class="stat-big">{{ total_kumush }}</span></p>
+    <p>Bosqich: <strong>{{ level }}</strong></p>
+    <div class="progress-bar"><span style="width: {% widthratio total_xp next_level_xp 100 %}%"></span></div>
+    <p class="muted">{{ total_xp }} / {{ next_level_xp }}</p>
+    <p>XP: <strong>{{ total_xp }}</strong></p>
+  </div>
+  <div class="card">
+    <h3>Yig'ilgan natijalar monitoringi</h3>
+    <ol>
+      <li>
+        <a href="{% url 'student-indicators-detail' 'lesson' %}">Darsga ishtirok bo'yicha</a> —
+        jami XP {{ by_reason.lesson.xp }}, Jami Kumush {{ by_reason.lesson.kumush }}
+      </li>
+      <li>
+        <a href="{% url 'student-indicators-detail' 'homework' %}">Uyga vazifa bo'yicha</a> —
+        jami XP {{ by_reason.homework.xp }}, Jami Kumush {{ by_reason.homework.kumush }}
+      </li>
+      <li>
+        <a href="{% url 'student-indicators-detail' 'exam' %}">Imtihondan o'tish bo'yicha</a> —
+        jami XP {{ by_reason.exam.xp }}, Jami Kumush {{ by_reason.exam.kumush }}
+      </li>
+    </ol>
+    <hr style="border-color:var(--border);margin:1rem 0;">
+    <p>Jami yig'ilgan XP: <strong>{{ total_xp }}</strong></p>
+    <p>Jami yig'ilgan Kumushlar: <strong>{{ total_kumush }}</strong></p>
+  </div>
+</div>
+{% endblock %}

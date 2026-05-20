@@ -1,0 +1,52 @@
+{% extends "students/base_student.html" %}
+{% block title %}To'lovlarim{% endblock %}
+{% block content %}
+<h1>To'lovlarim</h1>
+<form method="get" class="filter-row card">
+  <div>
+    <label>Holati</label>
+    <select name="status">
+      <option value="">Barchasi</option>
+      <option value="paid" {% if filters.status == 'paid' %}selected{% endif %}>To'langan</option>
+      <option value="unpaid" {% if filters.status == 'unpaid' %}selected{% endif %}>To'lanmagan</option>
+      <option value="unconfirmed" {% if filters.status == 'unconfirmed' %}selected{% endif %}>Tasdiqlanmagan</option>
+    </select>
+  </div>
+  <div>
+    <label>Dan</label>
+    <input type="date" name="from_date" value="{{ filters.from_date }}">
+  </div>
+  <div>
+    <label>Gacha</label>
+    <input type="date" name="to_date" value="{{ filters.to_date }}">
+  </div>
+  <button type="submit" class="btn btn-primary">Filtrlash</button>
+</form>
+<div class="card">
+  <table class="data-table">
+    <thead>
+      <tr><th>#</th><th>Miqdori</th><th>Holati</th><th>To'lov turi</th><th>Vaqti</th></tr>
+    </thead>
+    <tbody>
+      {% for payment in payments %}
+      <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ payment.amount|floatformat:0 }} so'm</td>
+        <td>{{ payment.get_status_display|default:payment.status }}</td>
+        <td>{{ payment.get_payment_type_display }}</td>
+        <td>{{ payment.paid_at|date:"d M, Y H:i" }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" class="muted">To'lovlar topilmadi</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if page_obj.has_other_pages %}
+  <p style="margin-top:1rem;">
+    {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}&status={{ filters.status }}&from_date={{ filters.from_date }}&to_date={{ filters.to_date }}">Oldingi</a>{% endif %}
+    {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}&status={{ filters.status }}&from_date={{ filters.from_date }}&to_date={{ filters.to_date }}">Keyingi</a>{% endif %}
+  </p>
+  {% endif %}
+</div>
+{% endblock %}

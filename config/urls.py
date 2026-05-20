@@ -1,13 +1,16 @@
 from django.contrib import admin
+from django.contrib.auth import views as auth_views
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.generic import RedirectView
 from debug_toolbar.toolbar import debug_toolbar_urls
 
 urlpatterns = [
+    path('', RedirectView.as_view(pattern_name='login', permanent=False)),
     path('admin/', admin.site.urls),
-    path('accounts/',include('django.contrib.auth.urls')),
-    path('accounts/',include('users.urls')),
+    path('accounts/logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('accounts/', include('users.urls')),
     path('attendances/',include('attendance.urls')),
     path('branches/',include('branches.urls')),
     path('courses/',include('courses.urls')),

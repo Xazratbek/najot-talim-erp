@@ -1,5 +1,6 @@
 from django.db import models
 from users.models import User
+from common.models import TimeStampedModel
 
 class XPReasonChoices(models.TextChoices):
     FOR_LESSON= "lesson", "Dars uchun"
@@ -7,7 +8,7 @@ class XPReasonChoices(models.TextChoices):
     FOR_EVENT_ACTIVITY = "event", "Tadbirda qatnashgani uchun"
     FOR_HOMEWORK = "homework", "Uyga vazifa uchun"
 
-class XP(models.Model):
+class XP(TimeStampedModel):
     student = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -26,7 +27,7 @@ class XP(models.Model):
     def __str__(self):
         return f"{self.student} - {self.amount}"
 
-class Rating(models.Model):
+class Rating(TimeStampedModel):
     student = models.ForeignKey(User,on_delete=models.CASCADE,related_name='rating')
     level = models.IntegerField(default=1)
 
