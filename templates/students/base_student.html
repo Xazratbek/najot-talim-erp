@@ -16,18 +16,18 @@
       <span class="beta">Beta</span>
     </div>
     <nav>
-      <a href="{% url 'student-dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'student-dashboard' or request.resolver_match.url_name == 'student-dashboard-alt' %}active{% endif %}">Bosh sahifa</a>
-      <a href="{% url 'student-payments' %}" class="nav-item {% if request.resolver_match.url_name == 'student-payments' %}active{% endif %}">To'lovlarim</a>
-      <a href="{% url 'student-groups' %}" class="nav-item {% if 'group' in request.resolver_match.url_name or 'lesson' in request.resolver_match.url_name %}active{% endif %}">Guruhlarim</a>
-      <a href="{% url 'student-indicators' %}" class="nav-item {% if 'indicators' in request.resolver_match.url_name %}active{% endif %}">Ko'rsatgichlarim</a>
-      <a href="{% url 'student-ranking' %}" class="nav-item {% if request.resolver_match.url_name == 'student-ranking' %}active{% endif %}">Reyting</a>
-      <a href="{% url 'student-shop' %}" class="nav-item {% if request.resolver_match.url_name == 'student-shop' %}active{% endif %}">Do'kon</a>
-      <a href="{% url 'student-settings' %}" class="nav-item {% if request.resolver_match.url_name == 'student-settings' or request.resolver_match.url_name == 'student-password-change' %}active{% endif %}">Sozlamalar</a>
+      <a href="{% url 'student-dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'student-dashboard' or request.resolver_match.url_name == 'student-dashboard-alt' %}active{% endif %}" ><span class='ico'>⌂</span>Bosh sahifa</a>
+      <a href="{% url 'student-payments' %}" class="nav-item {% if request.resolver_match.url_name == 'student-payments' %}active{% endif %}" ><span class='ico'>▦</span>To'lovlarim</a>
+      <a href="{% url 'student-groups' %}" class="nav-item {% if 'group' in request.resolver_match.url_name or 'lesson' in request.resolver_match.url_name %}active{% endif %}" ><span class='ico'>◉</span>Guruhlarim</a>
+      <a href="{% url 'student-indicators' %}" class="nav-item {% if 'indicators' in request.resolver_match.url_name %}active{% endif %}" ><span class='ico'>⌁</span>Ko'rsatgichlarim</a>
+      <a href="{% url 'student-ranking' %}" class="nav-item {% if request.resolver_match.url_name == 'student-ranking' %}active{% endif %}" ><span class='ico'>⬈</span>Reyting</a>
+      <a href="{% url 'student-shop' %}" class="nav-item {% if request.resolver_match.url_name == 'student-shop' %}active{% endif %}" ><span class='ico'>◌</span>Do'kon</a>
+      <a href="{% url 'student-settings' %}" class="nav-item {% if request.resolver_match.url_name == 'student-settings' or request.resolver_match.url_name == 'student-password-change' %}active{% endif %}" ><span class='ico'>⚙</span>Sozlamalar</a>
     </nav>
   </aside>
   <div class="student-main">
     <header class="student-topbar">
-      <span class="muted">Student panel</span>
+      <span class="muted">Talaba kabineti</span>
       <div class="topbar-actions">
         <span class="muted">Kumush: {{ sidebar_kumush|default:0 }}</span>
         <form action="{% url 'logout' %}" method="post">
