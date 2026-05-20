@@ -50,7 +50,7 @@ class ExamSubmission(TimeStampedModel):
         null=True,
         blank=True
     )
-    score = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(100)])
+    score = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(100)],default=0)
 
     class Meta:
         db_table = 'exam_submissions'
