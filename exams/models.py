@@ -1,9 +1,9 @@
 from django.db import models
-
+from common.models import TimeStampedModel
 from groups.models import Group
 from users.models import User
 
-class Exam(models.Model):
+class Exam(TimeStampedModel):
     group = models.ForeignKey(
         Group,
         on_delete=models.CASCADE,
@@ -26,7 +26,7 @@ class Exam(models.Model):
         return self.title
 
 
-class ExamSubmission(models.Model):
+class ExamSubmission(TimeStampedModel):
     exam = models.ForeignKey(
         Exam,
         on_delete=models.CASCADE,
@@ -35,9 +35,6 @@ class ExamSubmission(models.Model):
     student = models.ForeignKey(
         User,
         on_delete=models.CASCADE
-    )
-    file = models.FileField(
-        upload_to='exams/submissions/'
     )
     description = models.TextField(
         blank=True
@@ -61,3 +58,12 @@ class ExamSubmission(models.Model):
 
     def __str__(self):
         return f"{self.student} - {self.exam}"
+
+class ExamsubmissionFiles(TimeStampedModel):
+    exam_submission = models.ForeignKey(ExamSubmission,on_delete=models.CASCADE,related_name='files')
+    file = models.FileField(
+        upload_to='exams/submissions/'
+    )
+
+    class Meta:
+        db_table = 'examsubmission_files'

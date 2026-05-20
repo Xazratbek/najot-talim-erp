@@ -12,4 +12,14 @@ class HomeworkForm(forms.ModelForm):
 class HomeworkSubmissionForm(forms.ModelForm):
     class Meta:
         model = HomeworkSubmission
-        fields = ['homework', 'student', 'file', 'description', 'status']
+        fields = ['homework', 'student', 'description', 'status']
+
+class HomeworkSubmissionFileForm(forms.ModelForm):
+    images = forms.ImageField(
+            widget=forms.ClearableFileInput(attrs={'multiple': True}),
+            required=False
+        )
+
+    class Meta:
+        model = HomeworkSubmission
+        fields = ['title']

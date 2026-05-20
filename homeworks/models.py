@@ -41,9 +41,6 @@ class HomeworkSubmission(TimeStampedModel):
         on_delete=models.CASCADE,
         db_index=True
     )
-    file = models.FileField(
-        upload_to='homeworks/submissions/'
-    )
     description = models.TextField(
         blank=True
     )
@@ -57,3 +54,12 @@ class HomeworkSubmission(TimeStampedModel):
 
     def __str__(self):
         return f"{self.student} - {self.homework}"
+
+class HomeworkSubmissionFiles(TimeStampedModel):
+    homework_submission = models.ForeignKey(HomeworkSubmission,on_delete=models.CASCADE,related_name='files')
+    file = models.FileField(
+        upload_to='homeworks/submissions/'
+    )
+
+    class Meta:
+        db_table = 'homeworksubmission_files'
