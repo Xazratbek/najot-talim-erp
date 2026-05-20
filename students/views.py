@@ -521,14 +521,12 @@ class StudentSettingsView(StudentRequiredMixin, View):
         action = request.POST.get("action")
 
         if action == "profile":
-            student.first_name = request.POST.get("first_name", student.first_name)
-            student.last_name = request.POST.get("last_name", student.last_name)
-            student.phone = request.POST.get("phone", student.phone)
-            student.gender = request.POST.get("gender", student.gender) or None
             if request.FILES.get("avatar"):
                 student.avatar = request.FILES["avatar"]
-            student.save()
-            messages.success(request, "Profil yangilandi.")
+                student.save(update_fields=["avatar"])
+                messages.success(request, "Avatar yangilandi.")
+            else:
+                messages.info(request, "Avatar o'zgartirish uchun rasm tanlang.")
 
         elif action == "notifications":
             prefs, _ = NotificationPreference.objects.get_or_create(user=student)
