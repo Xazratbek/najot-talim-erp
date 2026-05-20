@@ -5,27 +5,31 @@
 {% if homework %}
 <div class="card">
   <h3>Uyga vazifa</h3>
+  {% if homework.video_file %}<p><strong>Video:</strong> <a href="{{ homework.video_file.url }}" target="_blank">Yuklab ko'rish</a></p>{% endif %}
+  {% if homework.homework_files.all %}<p><strong>Qo'shimcha fayllar:</strong></p>{% for hf in homework.homework_files.all %}<p><a href="{{ hf.file.url }}" target="_blank">📎 {{ hf.file.name }}</a></p>{% empty %}{% endfor %}{% endif %}
   <p>{{ homework.description }}</p>
   <p>Deadline: {{ homework.deadline|date:'d.m.Y H:i' }}</p>
 </div>
 <div class="card">
   <h3>Topshirganlar</h3>
-  <table><thead><tr><th>Student</th><th>Status</th><th>Fayllar</th><th>Action</th></tr></thead><tbody>
+  <table><thead><tr><th>Student</th><th>Status</th><th>Score</th><th>Fayllar</th><th>Action</th></tr></thead><tbody>
     {% for submission in submissions %}
     <tr>
       <td>{{ submission.student.get_full_name|default:submission.student.username }}</td>
       <td>{{ submission.get_status_display }}</td>
+      <td>{{ submission.score|default:"-" }}</td>
       <td>{% for f in submission.homeworksubmission_files.all %}<a href="{{ f.file.url }}" target="_blank">📎 Fayl</a><br>{% empty %}-{% endfor %}</td>
       <td>
         <form method="post">{% csrf_token %}
           <input type="hidden" name="action" value="review_submission"><input type="hidden" name="submission_id" value="{{ submission.id }}">
           <button name="status" value="approved">✅ Qabul</button>
           <button name="status" value="rejected">❌ Reject</button>
+          <input type="number" min="0" max="100" name="score" placeholder="Score">
           <input type="text" name="teacher_comment" placeholder="Izoh">
         </form>
       </td>
     </tr>
-    {% empty %}<tr><td colspan="4">Submission yo'q</td></tr>{% endfor %}
+    {% empty %}<tr><td colspan="5">Submission yo'q</td></tr>{% endfor %}
   </tbody></table>
 </div>
 {% else %}<p>Bu dars uchun uyga vazifa mavjud emas.</p>{% endif %}

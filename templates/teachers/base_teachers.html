@@ -12,9 +12,12 @@
     <aside class="teacher-sidebar">
         <div class="brand">Najot Ta'lim</div>
         <nav>
+            <p class="nav-group">Asosiy</p>
             <a class="nav-item {% if 'teacher-groups' in request.resolver_match.url_name or 'teacher_group_detail' == request.resolver_match.url_name %}active{% endif %}" href="{% url 'teacher-groups' %}">Guruhlar</a>
             <a class="nav-item {% if request.resolver_match.url_name == 'teacher-collecting-groups' %}active{% endif %}" href="{% url 'teacher-collecting-groups' %}">Yig'ilayotgan guruhlar</a>
             <a class="nav-item {% if request.resolver_match.url_name == 'teacher-profile' %}active{% endif %}" href="{% url 'teacher-profile' %}">Profil</a>
+                    <p class="nav-group">Ta'lim</p>
+            <a class="nav-item {% if request.resolver_match.url_name == 'teacher-attendance' %}active{% endif %}" href="{% url 'teacher-groups' %}">Uyga vazifalar / Darslar</a>
         </nav>
     </aside>
     <main class="teacher-main">

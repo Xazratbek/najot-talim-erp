@@ -1,0 +1,21 @@
+{% extends "teachers/base_teachers.html" %}
+{% block content %}
+<div class="page-head">
+  <h1>Uyga vazifa qo'shish</h1>
+  <a class="btn" href="{% url 'teacher_group_detail' guruh.id %}?tab=materials">← Darslar ro'yxatiga qaytish</a>
+</div>
+<form method="post" enctype="multipart/form-data" class="card hw-form">{% csrf_token %}
+  <label>Dars</label>
+  <select name="lesson_id" required>{% for l in lessons %}<option value="{{ l.id }}">{{ l.lesson.title }} — {{ l.lesson.lesson_date|date:'d.m.Y' }}</option>{% endfor %}</select>
+  <label>Uyga vazifa tavsifi</label>
+  <textarea name="description" rows="6" required placeholder="Uyga vazifa tafsiloti..."></textarea>
+  <label>Deadline</label>
+  <input type="datetime-local" name="deadline" required>
+  <label>Video tanlash</label>
+  <input type="file" name="video_file" accept="video/*">
+  <small class="muted">Faqat video fayllar chiqadi.</small>
+  <label>Context fayllar</label>
+  <input type="file" name="context_files" multiple>
+  <button type="submit" class="btn btn-primary">Uyga vazifani saqlash</button>
+</form>
+{% endblock %}
