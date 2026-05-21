@@ -1,18 +1,70 @@
 {% extends "teachers/base_teachers.html" %}
+{% block page_title %}Yo'qlama{% endblock %}
+{% block topbar_title %}Guruhlar › {{ guruh.name }} › Yo'qlama{% endblock topbar_title %}
 {% block content %}
-<p><a href="{% url 'teacher_group_detail' guruh.id %}">← Guruh</a></p>
-<h2>{{ guruh.name }} - Yo'qlama</h2>
-<form method="post" class="card">{% csrf_token %}
-<label>Bugungi dars</label>
-<select name="lesson_id">{% for l in lessons %}<option value="{{ l.id }}">{{ l.lesson.title }} ({{ l.lesson.lesson_date }})</option>{% endfor %}</select>
-<table><thead><tr><th>O'quvchi</th><th>Keldi/Kelmadi</th></tr></thead><tbody>
-{% for gs in guruh.students.all %}
-<tr><td>{{ gs.student.get_full_name|default:gs.student.username }}</td><td>
-<label><input type="radio" name="student_{{ gs.student_id }}" value="absent" checked> Chap (Kelmadi)</label>
-<label><input type="radio" name="student_{{ gs.student_id }}" value="present"> O'ng (Keldi)</label>
-</td></tr>
-{% endfor %}
-</tbody></table>
-<button type="submit">Saqlash</button>
+<section class="attendance-hero">
+  <div>
+    <h1>{{ guruh.name }}</h1>
+    {% if selected %}
+    <p>{{ selected.lesson.lesson_date|date:"d M, Y" }} • {{ selected.lesson.title }}</p>
+    {% else %}
+    <p>Dars topilmadi</p>
+    {% endif %}
+  </div>
+  <div class="attendance-stats">
+    <span><strong>{{ present_count }}</strong>Keldi</span>
+    <span><strong>{{ absent_count }}</strong>Kelmadi</span>
+  </div>
+</section>
+
+<form method="get" class="card filter-row attendance-filter">
+  <label class="field">
+    <span>Dars</span>
+    <select name="lesson_id" onchange="this.form.submit()">
+      {% for lesson in lessons %}
+      <option value="{{ lesson.id }}" {% if selected and selected.id == lesson.id %}selected{% endif %}>{{ lesson.lesson.title }} ({{ lesson.lesson.lesson_date|date:"d M, Y" }})</option>
+      {% endfor %}
+    </select>
+  </label>
+</form>
+
+<form method="post" class="card attendance-card">
+  {% csrf_token %}
+  {% if selected %}<input type="hidden" name="lesson_id" value="{{ selected.id }}">{% endif %}
+  <table class="attendance-table">
+    <thead>
+      <tr><th>#</th><th>Student Name</th><th>Attendance</th></tr>
+    </thead>
+    <tbody>
+    {% for row in attendance_rows %}
+      <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>
+          <span class="student-cell">
+            <span class="initials">{{ row.student.get_full_name|default:row.student.username|slice:":2" }}</span>
+            {{ row.student.get_full_name|default:row.student.username }}
+          </span>
+        </td>
+        <td>
+          <div class="segmented">
+            <label>
+              <input type="radio" name="student_{{ row.student.id }}" value="present" {% if row.status == 'present' %}checked{% endif %}>
+              <span>Present</span>
+            </label>
+            <label>
+              <input type="radio" name="student_{{ row.student.id }}" value="absent" {% if row.status == 'absent' %}checked{% endif %}>
+              <span>Absent</span>
+            </label>
+          </div>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="3" class="muted">O'quvchilar topilmadi.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <div class="form-footer">
+    <button type="submit" class="btn btn-primary" {% if not selected %}disabled{% endif %}>Saqlash va Yakunlash</button>
+  </div>
 </form>
 {% endblock %}

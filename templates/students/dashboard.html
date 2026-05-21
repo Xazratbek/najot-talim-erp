@@ -1,16 +1,111 @@
 {% extends "students/base_student.html" %}
 {% block title %}Bosh sahifa{% endblock %}
+{% block topbar_title %}Dashboard{% endblock %}
 {% block content %}
-<h1>Kumushlar: <span class="stat-big">{{ total_kumush }}</span></h1>
-<div class="grid-2">
-  <div class="card">
-    <p>Bosqich: <strong>{{ level }}</strong></p>
-    <div class="progress-bar"><span style="width: {% widthratio total_xp next_level_xp 100 %}%"></span></div>
-    <p class="muted">{{ total_xp }} / {{ next_level_xp }}</p>
-    <p>XP: <strong>{{ total_xp }}</strong></p>
-    <hr style="border-color: var(--border); margin: 1rem 0;">
-    <h3>Reyting</h3>
-    <p>Umumiy: <strong>{{ overall_rank }}</strong> - o'rin</p>
+<section class="hero-panel">
+  <div>
+    <h1>Salom, {{ request.user.first_name|default:request.user.username }}!</h1>
+    <p>Akademik natijalaringiz va yaqin darslaringiz shu yerda jamlangan.</p>
   </div>
+  <a href="{% url 'student-groups' %}" class="btn btn-ghost">Schedule</a>
+</section>
+
+<section class="stat-grid">
+  <article class="stat-card">
+    <span class="stat-icon">$</span>
+    <p>Kumush Balance</p>
+    <strong>{{ total_kumush|default:0 }}</strong>
+  </article>
+  <article class="stat-card">
+    <span class="stat-icon">XP</span>
+    <p>Total XP</p>
+    <strong>{{ total_xp|default:0 }}</strong>
+  </article>
+  <article class="stat-card">
+    <span class="stat-icon">L</span>
+    <p>Current Level</p>
+    <strong>{{ level }}</strong>
+    <div class="progress-bar"><span style="width: {% widthratio total_xp next_level_xp 100 %}%"></span></div>
+  </article>
+  <article class="stat-card">
+    <span class="stat-icon">#</span>
+    <p>Global Rank</p>
+    <strong>#{{ overall_rank }}</strong>
+  </article>
+</section>
+
+<div class="dashboard-grid">
+  <div class="dashboard-main">
+    <section class="card">
+      <div class="section-title-row">
+        <h2>Yaqin darslar</h2>
+        <a href="{% url 'student-groups' %}">View full schedule</a>
+      </div>
+      <div class="lesson-list">
+        {% for item in upcoming_lessons %}
+        <a href="{% url 'student-lesson-detail' item.pk %}" class="lesson-card accent-cyan">
+          <span class="lesson-date">{{ item.lesson.lesson_date|date:"d" }}<small>{{ item.lesson.lesson_date|date:"M" }}</small></span>
+          <span class="lesson-info">
+            <strong>{{ item.group.name }} - {{ item.lesson.title }}</strong>
+            <small>{{ item.lesson.lesson_date|date:"d M, Y" }}</small>
+          </span>
+          <span class="lesson-arrow">›</span>
+        </a>
+        {% empty %}
+        <p class="empty-note">Yaqin darslar topilmadi.</p>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Mening guruhlarim</h2>
+      <div class="group-card-grid">
+        {% for group in active_groups %}
+        <a href="{% url 'student-group-detail' group.pk %}" class="group-card">
+          <span class="stat-icon">L</span>
+          <span class="badge badge-blue">Active</span>
+          <strong>{{ group.name }}</strong>
+          <small>{{ group.course.title }}</small>
+          <span class="muted">{{ group.started_at|date:"d M, Y" }}</span>
+        </a>
+        {% empty %}
+        <p class="empty-note">Faol guruhlar yo'q.</p>
+        {% endfor %}
+      </div>
+    </section>
+  </div>
+
+  <aside class="dashboard-side">
+    <section class="card">
+      <h2>Indicators</h2>
+      <div class="xp-ring">
+        <span>{{ total_xp|default:0 }}</span>
+        <small>TOTAL XP</small>
+      </div>
+      <div class="indicator-list">
+        {% for row in indicator_rows %}
+        <div><span>{{ row.label }}</span><strong>{{ row.xp }} XP</strong></div>
+        {% empty %}
+        <p class="empty-note">XP hali yig'ilmagan.</p>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Ranking</h2>
+      <div class="rank-list">
+        {% for item in ranking_top %}
+        <div class="rank-item {% if item.id == request.user.id %}active{% endif %}">
+          <span>{{ forloop.counter }}</span>
+          <strong>{{ item.get_full_name|default:item.username }}</strong>
+          <em>{{ item.total_xp|default:0 }}</em>
+        </div>
+        {% empty %}
+        <p class="empty-note">Reyting bo'sh.</p>
+        {% endfor %}
+      </div>
+      <a class="subtle-link" href="{% url 'student-ranking' %}">View Full Leaderboard</a>
+    </section>
+  </aside>
 </div>
 {% endblock %}

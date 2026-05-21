@@ -5,35 +5,54 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Student panel{% endblock %} | Najot Ta'lim</title>
-  <link rel="stylesheet" href="{% static 'css/student.css' %}">
+  <link rel="stylesheet" href="{% static 'css/student.css' %}?v=erp-redesign">
   {% block extra_css %}{% endblock %}
 </head>
 <body class="student-body">
 <div class="student-layout">
   <aside class="student-sidebar">
     <div class="brand">
-      <span>NAJOT TA'LIM</span>
-      <span class="beta">Beta</span>
+      <span class="brand-mark">ERP</span>
+      <span>
+        <strong>ERP System</strong>
+        <small>Management Portal</small>
+      </span>
     </div>
     <nav>
-      <a href="{% url 'student-dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'student-dashboard' or request.resolver_match.url_name == 'student-dashboard-alt' %}active{% endif %}">Bosh sahifa</a>
-      <a href="{% url 'student-payments' %}" class="nav-item {% if request.resolver_match.url_name == 'student-payments' %}active{% endif %}">To'lovlarim</a>
-      <a href="{% url 'student-groups' %}" class="nav-item {% if 'group' in request.resolver_match.url_name or 'lesson' in request.resolver_match.url_name %}active{% endif %}">Guruhlarim</a>
-      <a href="{% url 'student-indicators' %}" class="nav-item {% if 'indicators' in request.resolver_match.url_name %}active{% endif %}">Ko'rsatgichlarim</a>
-      <a href="{% url 'student-ranking' %}" class="nav-item {% if request.resolver_match.url_name == 'student-ranking' %}active{% endif %}">Reyting</a>
-      <a href="{% url 'student-shop' %}" class="nav-item {% if request.resolver_match.url_name == 'student-shop' %}active{% endif %}">Do'kon</a>
-      <a href="{% url 'student-settings' %}" class="nav-item {% if request.resolver_match.url_name == 'student-settings' or request.resolver_match.url_name == 'student-password-change' %}active{% endif %}">Sozlamalar</a>
+      <a href="{% url 'student-dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'student-dashboard' or request.resolver_match.url_name == 'student-dashboard-alt' %}active{% endif %}"><span class="nav-icon">D</span>Dashboard</a>
+      <a href="{% url 'student-groups' %}" class="nav-item {% if 'group' in request.resolver_match.url_name or 'lesson' in request.resolver_match.url_name %}active{% endif %}"><span class="nav-icon">L</span>LMS</a>
+      <a href="{% url 'student-payments' %}" class="nav-item {% if request.resolver_match.url_name == 'student-payments' %}active{% endif %}"><span class="nav-icon">$</span>Finance</a>
+      <a href="{% url 'student-indicators' %}" class="nav-item {% if 'indicators' in request.resolver_match.url_name %}active{% endif %}"><span class="nav-icon">I</span>Indicators</a>
+      <a href="{% url 'student-ranking' %}" class="nav-item {% if request.resolver_match.url_name == 'student-ranking' %}active{% endif %}"><span class="nav-icon">R</span>Ranking</a>
+      <a href="{% url 'student-shop' %}" class="nav-item {% if request.resolver_match.url_name == 'student-shop' %}active{% endif %}"><span class="nav-icon">S</span>Do'kon</a>
+      <a href="{% url 'student-settings' %}" class="nav-item {% if request.resolver_match.url_name == 'student-settings' or request.resolver_match.url_name == 'student-password-change' %}active{% endif %}"><span class="nav-icon">⚙</span>Sozlamalar</a>
     </nav>
+    <div class="sidebar-footer">
+      <a href="{% url 'student-shop' %}" class="btn btn-soft">+ New Entry</a>
+      <span class="footer-link">? Help</span>
+      <form action="{% url 'logout' %}" method="post">
+        {% csrf_token %}
+        <button type="submit" class="footer-link logout-button">↪ Logout</button>
+      </form>
+    </div>
   </aside>
   <div class="student-main">
     <header class="student-topbar">
-      <span class="muted">Student panel</span>
+      <strong class="topbar-title">{% block topbar_title %}Dashboard{% endblock %}</strong>
       <div class="topbar-actions">
-        <span class="muted">Kumush: {{ sidebar_kumush|default:0 }}</span>
-        <form action="{% url 'logout' %}" method="post">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-ghost">Chiqish</button>
-        </form>
+        <label class="search-shell">
+          <span>⌕</span>
+          <input type="search" placeholder="Search..." aria-label="Search">
+        </label>
+        <span class="topbar-icon">⌁</span>
+        <span class="topbar-icon">⚙</span>
+        <span class="avatar">
+          {% if request.user.avatar %}
+          <img src="{{ request.user.avatar.url }}" alt="{{ request.user.get_full_name|default:request.user.username }}">
+          {% else %}
+          {{ request.user.get_full_name|default:request.user.username|slice:":1" }}
+          {% endif %}
+        </span>
       </div>
     </header>
     <main class="student-content">
