@@ -39,7 +39,7 @@ class StudentRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
             total_kumush=Sum("kumushlar"),
         )
         total_xp = xp_agg["total_xp"] or 0
-        total_kumush = xp_agg["total_kumush"]
+        total_kumush = xp_agg["total_kumush"] or 0
         rating = Rating.objects.filter(student=student).first()
         level = rating.level if rating else 1
         higher = (
@@ -67,12 +67,47 @@ class StudentDashboardView(StudentRequiredMixin, View):
     template_name = "students/dashboard.html"
 
     def get(self, request):
+        student = request.user
+        today = date.today()
+        active_groups = (
+            Group.objects.filter(students__student=student)
+            .filter(Q(ended_at__isnull=True) | Q(ended_at__gte=today))
+            .select_related("course", "course__category")
+            .prefetch_related("teachers__teacher")
+            .distinct()[:4]
+        )
+        upcoming_lessons = (
+            GroupLesson.objects.filter(
+                group__students__student=student,
+                lesson__lesson_date__gte=today,
+            )
+            .select_related("lesson", "group")
+            .order_by("lesson__lesson_date")[:3]
+        )
+        indicator_rows = []
+        for reason, label in XPReasonChoices.choices:
+            total = (
+                XP.objects.filter(student=student, reason=reason)
+                .aggregate(xp=Sum("amount"))["xp"]
+                or 0
+            )
+            if total:
+                indicator_rows.append({"label": label, "xp": total})
+        ranking_top = (
+            User.objects.filter(role=Roles.STUDENT)
+            .annotate(total_xp=Sum("xps__amount"))
+            .order_by("-total_xp", "id")[:3]
+        )
         return render(
             request,
             self.template_name,
             {
                 **self.stats(),
-                **self.sidebar()
+                **self.sidebar(),
+                "active_groups": active_groups,
+                "upcoming_lessons": upcoming_lessons,
+                "indicator_rows": indicator_rows,
+                "ranking_top": ranking_top,
             },
         )
 
@@ -171,7 +206,6 @@ class StudentGroupDetailView(StudentRequiredMixin, View):
                 deadline = homework.deadline
 
             if status_filter and status_key != status_filter:
-                print("mashi ishladi")
                 continue
 
             rows.append(
@@ -498,7 +532,9 @@ class StudentShopView(StudentRequiredMixin, View):
             messages.error(request, "Mahsulot tugagan.")
         else:
             student_xp_balance = student.xps.all().order_by('-id').first()
+
             student_xp_balance.kumushlar -= product.price
+            print("HOzirgi balance kumushlar")
             student_xp_balance.save()
             product.stock -= 1
             product.save(update_fields=["stock"])

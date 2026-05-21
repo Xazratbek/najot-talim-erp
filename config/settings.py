@@ -13,7 +13,7 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 SECRET_KEY = env('SECRET_KEY')
 
 
-DEBUG = env('DEBUG')
+DEBUG = env.bool('DEBUG', default=False)
 
 ALLOWED_HOSTS = []
 
@@ -142,7 +142,7 @@ LOGOUT_REDIRECT_URL = 'login'
 
 AUTH_USER_MODEL = 'users.User'
 
-USE_S3_STORAGE = env.bool('USE_S3_STORAGE', default=True)
+USE_S3_STORAGE = env.bool('USE_S3_STORAGE', default=True) and not DEBUG
 
 STATICFILES_DIRS = [BASE_DIR / 'static']
 

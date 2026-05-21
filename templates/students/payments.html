@@ -1,28 +1,36 @@
 {% extends "students/base_student.html" %}
 {% block title %}To'lovlarim{% endblock %}
+{% block topbar_title %}Moliya › To'lovlar{% endblock %}
 {% block content %}
-<h1>To'lovlarim</h1>
-<form method="get" class="filter-row card">
+<div class="page-head">
   <div>
-    <label>Holati</label>
+    <h1>To'lovlar tarixi</h1>
+    <p>O'zingizga tegishli to'lovlarni kuzatish va filtrlash.</p>
+  </div>
+</div>
+
+<form method="get" class="filter-row card">
+  <label class="field">
+    <span>Holati</span>
     <select name="status">
       <option value="">Barchasi</option>
       <option value="paid" {% if filters.status == 'paid' %}selected{% endif %}>To'langan</option>
       <option value="unpaid" {% if filters.status == 'unpaid' %}selected{% endif %}>To'lanmagan</option>
       <option value="unconfirmed" {% if filters.status == 'unconfirmed' %}selected{% endif %}>Tasdiqlanmagan</option>
     </select>
-  </div>
-  <div>
-    <label>Dan</label>
+  </label>
+  <label class="field">
+    <span>Dan</span>
     <input type="date" name="from_date" value="{{ filters.from_date }}">
-  </div>
-  <div>
-    <label>Gacha</label>
+  </label>
+  <label class="field">
+    <span>Gacha</span>
     <input type="date" name="to_date" value="{{ filters.to_date }}">
-  </div>
+  </label>
   <button type="submit" class="btn btn-primary">Filtrlash</button>
 </form>
-<div class="card">
+
+<div class="card table-card">
   <table class="data-table">
     <thead>
       <tr><th>#</th><th>Miqdori</th><th>Holati</th><th>To'lov turi</th><th>Vaqti</th></tr>
@@ -31,8 +39,8 @@
       {% for payment in payments %}
       <tr>
         <td>{{ forloop.counter }}</td>
-        <td>{{ payment.amount|floatformat:0 }} so'm</td>
-        <td>{{ payment.get_status_display|default:payment.status }}</td>
+        <td><strong>{{ payment.amount|floatformat:0 }} so'm</strong></td>
+        <td><span class="status-pill status-{{ payment.status }}">{{ payment.get_status_display|default:payment.status }}</span></td>
         <td>{{ payment.get_payment_type_display }}</td>
         <td>{{ payment.paid_at|date:"d M, Y H:i" }}</td>
       </tr>
@@ -42,11 +50,13 @@
     </tbody>
   </table>
   {% if page_obj.has_other_pages %}
-  <p style="margin-top:1rem;">
-    {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}&status={{ filters.status }}&from_date={{ filters.from_date }}&to_date={{ filters.to_date }}">Oldingi</a>{% endif %}
-    {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
-    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}&status={{ filters.status }}&from_date={{ filters.from_date }}&to_date={{ filters.to_date }}">Keyingi</a>{% endif %}
-  </p>
+  <div class="pagination">
+    <span>Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+    <div>
+      {% if page_obj.has_previous %}<a class="page-link" href="?page={{ page_obj.previous_page_number }}&status={{ filters.status }}&from_date={{ filters.from_date }}&to_date={{ filters.to_date }}">‹</a>{% endif %}
+      {% if page_obj.has_next %}<a class="page-link" href="?page={{ page_obj.next_page_number }}&status={{ filters.status }}&from_date={{ filters.from_date }}&to_date={{ filters.to_date }}">›</a>{% endif %}
+    </div>
+  </div>
   {% endif %}
 </div>
 {% endblock %}

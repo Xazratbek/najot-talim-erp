@@ -215,5 +215,31 @@ class TeacherAttendanceView(TeacherRequiredMixin, View):
     def get(self, request, pk):
         group = self.get_group(request, pk)
         lessons = GroupLesson.objects.filter(group=group).select_related("lesson").order_by("-lesson__lesson_date")
-        selected = lessons.first()
-        return render(request, self.template_name, {"guruh": group, "lessons": lessons, "selected": selected})
+        selected = lessons.filter(pk=request.GET.get("lesson_id")).first() if request.GET.get("lesson_id") else lessons.first()
+        existing = {}
+        if selected:
+            existing = {
+                attendance.student_id: attendance.status
+                for attendance in Attendance.objects.filter(group_lesson=selected)
+            }
+        attendance_rows = [
+            {
+                "student": gs.student,
+                "status": existing.get(gs.student_id, Status.ABSENT),
+            }
+            for gs in group.students.select_related("student")
+        ]
+        present_count = sum(1 for row in attendance_rows if row["status"] == Status.PRESENT)
+        absent_count = sum(1 for row in attendance_rows if row["status"] == Status.ABSENT)
+        return render(
+            request,
+            self.template_name,
+            {
+                "guruh": group,
+                "lessons": lessons,
+                "selected": selected,
+                "attendance_rows": attendance_rows,
+                "present_count": present_count,
+                "absent_count": absent_count,
+            },
+        )

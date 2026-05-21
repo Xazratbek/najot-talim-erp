@@ -5,24 +5,59 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block page_title %}Teacher Panel{% endblock page_title %}</title>
-    <link rel="stylesheet" href="{% static 'css/teacher.css' %}">
+    <link rel="stylesheet" href="{% static 'css/teacher.css' %}?v=erp-redesign">
 </head>
 <body class="teacher-body">
 <div class="teacher-layout">
     <aside class="teacher-sidebar">
-        <div class="brand">Najot Ta'lim</div>
+        <div class="brand">
+            <span class="brand-mark">ERP</span>
+            <span>
+                <strong>ERP System</strong>
+                <small>Management Portal</small>
+            </span>
+        </div>
+        <a class="btn btn-soft sidebar-action" href="{% url 'teacher-groups' %}">+ New Entry</a>
         <nav>
-            <p class="nav-group">Asosiy</p>
-            <a class="nav-item {% if 'teacher-groups' in request.resolver_match.url_name or 'teacher_group_detail' == request.resolver_match.url_name %}active{% endif %}" href="{% url 'teacher-groups' %}">Guruhlar</a>
-            <a class="nav-item {% if request.resolver_match.url_name == 'teacher-collecting-groups' %}active{% endif %}" href="{% url 'teacher-collecting-groups' %}">Yig'ilayotgan guruhlar</a>
-            <a class="nav-item {% if request.resolver_match.url_name == 'teacher-profile' %}active{% endif %}" href="{% url 'teacher-profile' %}">Profil</a>
-                    <p class="nav-group">Ta'lim</p>
-            <a class="nav-item {% if request.resolver_match.url_name == 'teacher-attendance' %}active{% endif %}" href="{% url 'teacher-groups' %}">Uyga vazifalar / Darslar</a>
+            <a class="nav-item {% if 'teacher-groups' in request.resolver_match.url_name or 'teacher_group_detail' == request.resolver_match.url_name %}active{% endif %}" href="{% url 'teacher-groups' %}"><span class="nav-icon">D</span>Dashboard</a>
+            <a class="nav-item {% if request.resolver_match.url_name == 'teacher-collecting-groups' %}active{% endif %}" href="{% url 'teacher-collecting-groups' %}"><span class="nav-icon">L</span>LMS</a>
+            <a class="nav-item {% if request.resolver_match.url_name == 'teacher-profile' %}active{% endif %}" href="{% url 'teacher-profile' %}"><span class="nav-icon">P</span>Profil</a>
+            <a class="nav-item {% if request.resolver_match.url_name == 'teacher-attendance' %}active{% endif %}" href="{% url 'teacher-groups' %}"><span class="nav-icon">A</span>Attendance</a>
         </nav>
+        <div class="sidebar-footer">
+            <span class="footer-link">? Help</span>
+            <form action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="footer-link logout-button">↪ Logout</button>
+            </form>
+        </div>
     </aside>
-    <main class="teacher-main">
-        {% block content %}{% endblock content %}
-    </main>
+    <div class="teacher-main">
+        <header class="teacher-topbar">
+            <strong>{% block topbar_title %}{% endblock topbar_title %}</strong>
+            <div class="topbar-actions">
+                <span class="topbar-icon">⌁</span>
+                <span class="topbar-icon">⚙</span>
+                <span class="avatar">
+                    {% if request.user.avatar %}
+                    <img src="{{ request.user.avatar.url }}" alt="{{ request.user.get_full_name|default:request.user.username }}">
+                    {% else %}
+                    {{ request.user.get_full_name|default:request.user.username|slice:":1" }}
+                    {% endif %}
+                </span>
+            </div>
+        </header>
+        <main class="teacher-content">
+            {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                <li class="{{ message.tags }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            {% block content %}{% endblock content %}
+        </main>
+    </div>
 </div>
 </body>
 </html>
